@@ -44,4 +44,6 @@ export async function generateGeminiOutcome(
       throw err;
     }
   }
+
+  throw new Error("Model execution failed after multiple retry attempts.");
 }

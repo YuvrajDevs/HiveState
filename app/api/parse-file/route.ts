@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import pdf from "pdf-parse";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,6 +15,7 @@ export async function POST(req: NextRequest) {
     let text = "";
 
     if (file.name.endsWith(".pdf")) {
+      const pdf = require("pdf-parse");
       const data = await pdf(buffer);
       text = data.text;
     } else if (file.name.endsWith(".md") || file.name.endsWith(".txt")) {

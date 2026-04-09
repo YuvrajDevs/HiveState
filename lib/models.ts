@@ -49,6 +49,9 @@ export async function executeUnifiedModel(
     // Attempt Primary Model
     console.log(`🎯 Models Hub: Attempting Primary [${primaryModel}]`);
     const outcome = await generateGeminiOutcome(systemPrompt, userPrompt, primaryModel);
+    if (!outcome) {
+      throw new Error("Primary model returned no result.");
+    }
     
     return {
       text: outcome.text,
@@ -70,6 +73,10 @@ export async function executeUnifiedModel(
       console.warn(`🔄 Models Hub: Primary failed. Triggering Fallback [${fallbackModel}]...`);
       try {
         const fallbackOutcome = await generateGeminiOutcome(systemPrompt, userPrompt, fallbackModel);
+        if (!fallbackOutcome) {
+          throw new Error("Fallback model returned no result.");
+        }
+        
         return {
           text: fallbackOutcome.text,
           usageMetadata: {
