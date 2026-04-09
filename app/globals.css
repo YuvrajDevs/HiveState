@@ -1,26 +1,111 @@
 @import "tailwindcss";
 
+@theme {
+  --color-background: #0e0e0e;
+  --color-surface: #141414;
+  --color-border: #222222;
+  --color-accent: #3b82f6;
+  --color-muted: #737373;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #0e0e0e;
+  --foreground: #ededed;
+  --accent: #3b82f6;
+  --accent-rgb: 59, 130, 246;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-outfit), sans-serif;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Modern SaaS Grid */
+.bg-grid {
+  background-size: 30px 30px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.bg-grid-small {
+  background-size: 10px 10px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* Modern UI Components */
+.modern-border {
+  border: 1px solid #222222;
+}
+
+.modern-card {
+  background: #141414;
+  border: 1px solid #222222;
+  border-radius: 8px;
+  transition: all 150ms ease;
+}
+
+.modern-card:hover {
+  border-color: #333333;
+  box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.5);
+}
+
+.glass-panel {
+  background: rgba(20, 20, 20, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.font-mono-data {
+  font-family: var(--font-jetbrains-mono), monospace;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #222222;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #333333;
+}
+
+/* Keep legacy classes for compatibility during transition */
+.brutalist-border, .modern-border {
+  border: 1px solid #222222;
+}
+
+.brutalist-card, .modern-card {
+  background: #141414;
+  border: 1px solid #222222;
+  border-radius: 8px;
+  transition: all 150ms ease;
+}
+
+.modern-card:hover {
+  border-color: #333333;
+  box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.5);
+}
+
+/* React Flow Customizations */
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #3b82f6 !important;
+  stroke-width: 3 !important;
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: rgba(59, 130, 246, 0.8) !important;
+  cursor: pointer;
 }
