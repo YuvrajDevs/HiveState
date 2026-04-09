@@ -29,7 +29,12 @@ export async function getProviders() {
       .select("*")
       .order("created_at", { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      if (error.message.includes("API key")) {
+        throw new Error("Supabase Connection Error: Your SUPABASE_SERVICE_ROLE_KEY is invalid or mismatched. Check Vercel Environment Variables.");
+      }
+      throw error;
+    }
 
     // Mask keys before sending to client
     return {
@@ -40,8 +45,12 @@ export async function getProviders() {
       })),
     };
   } catch (error: any) {
-    console.error("Error fetching providers:", error.message);
-    return { success: false, error: error.message };
+    console.error("⛔ [ACTION] getProviders failed:", error.message);
+    return { 
+      success: false, 
+      error: error.message,
+      isSupabaseError: error.message.includes("Supabase Connection Error")
+    };
   }
 }
 
