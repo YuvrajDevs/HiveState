@@ -39,8 +39,8 @@ export default async function TracesPage() {
   if (error) {
     return (
       <div className="p-12 text-center brutalist-border bg-red-500/5">
-        <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-red-500">Trace Fetch Failed</h2>
+        <AlertTriangle className="w-12 h-12 text-bad mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-bad">Trace Fetch Failed</h2>
         <p className="text-muted text-sm mt-2 font-mono-data">{error.message}</p>
       </div>
     );

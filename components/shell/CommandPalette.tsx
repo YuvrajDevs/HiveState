@@ -48,10 +48,10 @@ function Palette({ onClose }: { onClose: () => void }) {
   const go = (c?: Cmd) => { if (c) { router.push(c.href); onClose(); } };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-black/60 px-4 pt-[15vh]" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-[#0d1424]/70 px-4 pt-[15vh]" onMouseDown={onClose}>
       <div
         role="dialog" aria-modal="true" aria-label="Quick navigation"
-        className="w-full max-w-lg overflow-hidden rounded-xl border border-white/10 bg-[#141414] shadow-2xl"
+        className="w-full max-w-lg overflow-hidden rounded-xl border border-white/15 bg-surface shadow-2xl"
         onMouseDown={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
           if (e.key === "Escape") onClose();
@@ -60,7 +60,7 @@ function Palette({ onClose }: { onClose: () => void }) {
           if (e.key === "Enter") { e.preventDefault(); go(results[active]); }
         }}
       >
-        <div className="flex items-center gap-3 border-b border-white/10 px-4">
+        <div className="flex items-center gap-3 border-b border-white/15 px-4">
           <Search className="h-4 w-4 text-neutral-500" />
           <input
             ref={inputRef} value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }}
@@ -68,7 +68,7 @@ function Palette({ onClose }: { onClose: () => void }) {
             role="combobox" aria-expanded="true" aria-controls="cmd-list"
             className="h-12 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-neutral-500"
           />
-          <kbd className="rounded border border-white/10 px-1.5 py-0.5 text-[11px] text-neutral-400">Esc</kbd>
+          <kbd className="rounded border border-white/15 px-1.5 py-0.5 text-[11px] text-neutral-400">Esc</kbd>
         </div>
         <ul id="cmd-list" role="listbox" className="max-h-80 overflow-y-auto p-2">
           {results.length === 0 && <li className="px-3 py-6 text-center text-sm text-neutral-500">No matches</li>}

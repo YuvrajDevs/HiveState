@@ -45,7 +45,7 @@ export default function ProviderCard({ provider, onEdit }: ProviderProps) {
 
   return (
     <div className={`group modern-card p-4 flex flex-col gap-4 border transition-all ${
-      provider.is_active ? "border-white/5 bg-white/[0.01]" : "border-white/5 opacity-40 grayscale bg-transparent"
+      provider.is_active ? "border-white/10 bg-white/[0.01]" : "border-white/10 opacity-40 grayscale bg-transparent"
     } ${provider.is_default ? "ring-1 ring-accent/30 border-accent/20 bg-accent/[0.02]" : ""}`}>
       
       <div className="flex items-start justify-between">
@@ -72,7 +72,7 @@ export default function ProviderCard({ provider, onEdit }: ProviderProps) {
                 </span>
               )}
             </div>
-            <div className="text-xs text-muted/80 font-mono-data uppercase tracking-widest mt-0.5">
+            <div className="text-xs text-muted font-mono-data uppercase tracking-widest mt-0.5">
               Provider: {provider.name}
             </div>
           </div>
@@ -82,7 +82,7 @@ export default function ProviderCard({ provider, onEdit }: ProviderProps) {
           <button 
             disabled={loading}
             onClick={() => onEdit(provider)}
-            className="p-1.5 hover:bg-white/5 rounded-md text-muted/85 hover:text-foreground transition-all"
+            className="p-1.5 hover:bg-white/5 rounded-md text-muted hover:text-foreground transition-all"
             title="Edit Configuration"
           >
             <MoreVertical className="w-3.5 h-3.5" />
@@ -90,7 +90,7 @@ export default function ProviderCard({ provider, onEdit }: ProviderProps) {
           <button 
             disabled={loading}
             onClick={handleDelete}
-            className="p-1.5 hover:bg-red-500/10 rounded-md text-red-500/40 hover:text-red-500 transition-all"
+            className="p-1.5 hover:bg-red-500/10 rounded-md text-bad hover:text-bad transition-all"
             title="Delete Provider"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -98,15 +98,15 @@ export default function ProviderCard({ provider, onEdit }: ProviderProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 py-2 border-y border-white/5">
+      <div className="grid grid-cols-2 gap-4 py-2 border-y border-white/10">
         <div className="space-y-1">
-          <div className="text-[11px] text-muted/80 uppercase font-bold tracking-widest flex items-center gap-1.5">
+          <div className="text-[11px] text-muted uppercase font-bold tracking-widest flex items-center gap-1.5">
             <Lock className="w-2.5 h-2.5" /> Credentials
           </div>
           <div className="text-xs font-mono-data text-foreground/60">{provider.api_key || "••••••••"}</div>
         </div>
         <div className="space-y-1">
-          <div className="text-[11px] text-muted/80 uppercase font-bold tracking-widest flex items-center gap-1.5">
+          <div className="text-[11px] text-muted uppercase font-bold tracking-widest flex items-center gap-1.5">
             <Activity className="w-2.5 h-2.5" /> Rate Limit
           </div>
           <div className="text-xs font-mono-data text-foreground/60">
@@ -121,7 +121,7 @@ export default function ProviderCard({ provider, onEdit }: ProviderProps) {
             onClick={handleToggle}
             disabled={loading}
             className={`flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest transition-all ${
-              provider.is_active ? "text-green-500/60 hover:text-green-500" : "text-muted/80 hover:text-muted"
+              provider.is_active ? "text-ok hover:text-ok" : "text-muted hover:text-muted"
             }`}
           >
             {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : provider.is_active ? <CheckCircle2 className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
@@ -132,7 +132,7 @@ export default function ProviderCard({ provider, onEdit }: ProviderProps) {
             <button 
               onClick={handleSetDefault}
               disabled={loading}
-              className="text-[11px] font-bold uppercase tracking-widest text-muted/80 hover:text-accent transition-all"
+              className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-accent transition-all"
             >
               Set Default
             </button>
@@ -140,7 +140,7 @@ export default function ProviderCard({ provider, onEdit }: ProviderProps) {
         </div>
         
         {provider.base_url && (
-           <div className="text-[11px] text-muted/80 uppercase font-mono-data flex items-center gap-1">
+           <div className="text-[11px] text-muted uppercase font-mono-data flex items-center gap-1">
              <Globe className="w-2 h-2 opacity-50" /> {new URL(provider.base_url).hostname}
            </div>
         )}

@@ -156,18 +156,18 @@ function RunContent() {
     <div className="max-w-2xl mx-auto py-10 px-4 space-y-10">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/" className="p-2 hover:bg-white/5 rounded-md text-muted/85 hover:text-accent transition-all">
+          <Link href="/" className="p-2 hover:bg-white/5 rounded-md text-muted hover:text-accent transition-all">
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
             <h1 className="text-2xl font-bold tracking-tight uppercase tracking-[0.1em]">Run a workflow</h1>
-            <p className="text-muted/85 text-xs mt-1">Pick a workflow, give it some input, and start. Tip: press Ctrl/⌘ + Enter to run.</p>
+            <p className="text-muted text-xs mt-1">Pick a workflow, give it some input, and start. Tip: press Ctrl/⌘ + Enter to run.</p>
           </div>
         </div>
       </header>
 
       {/* Main Execution Form */}
-      <section className="modern-card p-4 space-y-6 rounded-2xl border-white/5 bg-white/[0.01] relative overflow-hidden">
+      <section className="modern-card tone-blue p-4 space-y-6 rounded-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-4 opacity-[0.02] pointer-events-none">
           <Zap className="w-32 h-32" />
         </div>
@@ -175,13 +175,13 @@ function RunContent() {
         <div className="space-y-4 relative z-10">
 
           <div className="space-y-2">
-            <label className="text-[11px] font-bold text-muted/80 uppercase tracking-[0.2em] px-1">Selected Workflow</label>
+            <label className="text-[11px] font-bold text-muted uppercase tracking-[0.2em] px-1">Selected Workflow</label>
             <div className="grid grid-cols-1 gap-2">
               <select 
                 value={selectedId}
                 onChange={(e) => setSelectedId(e.target.value)}
                 disabled={isRunning}
-                className="w-full bg-white/[0.03] border border-white/10 p-3 rounded-lg text-xs font-medium focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all outline-none appearance-none cursor-pointer"
+                className="w-full bg-white/[0.03] border border-white/15 p-3 rounded-lg text-xs font-medium focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all outline-none appearance-none cursor-pointer"
               >
                 <option value="" disabled>--- SELECT CLUSTER ---</option>
                 {loading ? (
@@ -201,15 +201,15 @@ function RunContent() {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
-              <label className="text-[11px] font-bold text-muted/80 uppercase tracking-[0.2em]">Initial Input Context</label>
+              <label className="text-[11px] font-bold text-muted uppercase tracking-[0.2em]">Initial Input Context</label>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] text-muted/80 font-mono-data uppercase">Markdown Supported</span>
+                <span className="text-[11px] text-muted font-mono-data uppercase">Markdown Supported</span>
               </div>
             </div>
 
             {/* File Upload Zone */}
             {!uploadedFile ? (
-              <label className="group relative border border-dashed border-white/10 rounded-xl p-4 bg-white/[0.01] hover:bg-white/[0.03] hover:border-accent/40 cursor-pointer transition-all block overflow-hidden">
+              <label className="group relative border border-dashed border-white/15 rounded-xl p-4 bg-white/[0.01] hover:bg-white/[0.03] hover:border-accent/40 cursor-pointer transition-all block overflow-hidden">
                 <input 
                   type="file" 
                   className="hidden" 
@@ -227,7 +227,7 @@ function RunContent() {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-foreground/80 uppercase tracking-wider mb-0.5">Attach Source Code or Data</h4>
-                    <p className="text-[11px] text-muted/80 uppercase tracking-widest font-mono-data">Supports PDF, Markdown, Plain Text</p>
+                    <p className="text-[11px] text-muted uppercase tracking-widest font-mono-data">Supports PDF, Markdown, Plain Text</p>
                   </div>
                 </div>
               </label>
@@ -239,7 +239,7 @@ function RunContent() {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-accent uppercase tracking-wider line-clamp-1">{uploadedFile.name}</h4>
-                    <p className="text-[11px] text-accent/50 uppercase tracking-widest font-mono-data">{(uploadedFile.size / 1024).toFixed(1)} KB • Content Parsed</p>
+                    <p className="text-[11px] text-accent uppercase tracking-widest font-mono-data">{(uploadedFile.size / 1024).toFixed(1)} KB • Content Parsed</p>
                   </div>
                 </div>
                 <button 
@@ -257,10 +257,10 @@ function RunContent() {
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isRunning || !selectedId || isUploading}
                 placeholder="Enter instructions or paste documentation here..."
-                className={`w-full h-40 bg-white/[0.03] border border-white/10 p-4 rounded-xl text-xs leading-relaxed focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all outline-none resize-none placeholder:text-muted/85 tracking-tight ${useFileAsInput ? 'opacity-50' : ''}`}
+                className={`w-full h-40 bg-white/[0.03] border border-white/15 p-4 rounded-xl text-xs leading-relaxed focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all outline-none resize-none placeholder:text-muted tracking-tight ${useFileAsInput ? 'opacity-50' : ''}`}
               />
               {useFileAsInput && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[1px] rounded-xl pointer-events-none">
+                <div className="absolute inset-0 flex items-center justify-center bg-inset/85 backdrop-blur-[1px] rounded-xl pointer-events-none">
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-accent/20 border border-accent/40 rounded-full">
                     <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
                     <span className="text-[11px] font-bold text-accent uppercase tracking-widest">Using Document Content</span>
@@ -271,14 +271,14 @@ function RunContent() {
             
             <div className="px-1 flex items-center gap-2">
               <Zap className="w-3 h-3 text-yellow-500/40" />
-              <span className="text-[11px] text-muted/80 uppercase font-mono-data tracking-[0.1em]">Input will be processed as the primary workflow context head.</span>
+              <span className="text-[11px] text-muted uppercase font-mono-data tracking-[0.1em]">Input will be processed as the primary workflow context head.</span>
             </div>
           </div>
 
           <button
             onClick={handleRun}
             disabled={isRunning || !selectedId || !input}
-            className="w-full bg-accent text-white py-4 rounded-xl font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-accent/20 transition-all group disabled:opacity-30"
+            className="w-full bg-accent text-[#0b1220] py-4 rounded-xl font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-accent/20 transition-all group disabled:opacity-30"
           >
             {isRunning ? (
               <>
@@ -301,8 +301,8 @@ function RunContent() {
           {status !== "idle" && (
             <div className={`mt-6 p-4 rounded-xl border animate-in fade-in slide-in-from-top-2 duration-300 ${
               status === "started" ? "bg-accent/5 border-accent/20 text-accent" :
-              status === "completed" ? "bg-green-500/5 border-green-500/20 text-green-500" :
-              "bg-red-500/5 border-red-500/20 text-red-500"
+              status === "completed" ? "bg-green-500/5 border-green-500/20 text-ok" :
+              "bg-red-500/5 border-red-500/20 text-bad"
             }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -339,22 +339,22 @@ function RunContent() {
 
       {/* Info context */}
       <footer className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="modern-card p-4 border-none bg-white/[0.02] rounded-xl flex items-start gap-4">
+        <div className="modern-card tone-cyan p-4 rounded-xl flex items-start gap-4">
           <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
             <Cpu className="w-4 h-4 text-accent" />
           </div>
           <div>
             <h4 className="text-xs font-bold text-foreground/80 uppercase tracking-wider mb-1">Compute Logic</h4>
-            <p className="text-[11px] text-muted/80 leading-relaxed">Each agent uses the Gemini model set on its node. Total time is the sum of every agent step.</p>
+            <p className="text-[11px] text-muted leading-relaxed">Each agent uses the Gemini model set on its node. Total time is the sum of every agent step.</p>
           </div>
         </div>
-        <div className="modern-card p-4 border-none bg-white/[0.02] rounded-xl flex items-start gap-4">
+        <div className="modern-card tone-violet p-4 rounded-xl flex items-start gap-4">
           <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
             <BookOpen className="w-4 h-4 text-accent" />
           </div>
           <div>
             <h4 className="text-xs font-bold text-foreground/80 uppercase tracking-wider mb-1">Persistent Logs</h4>
-            <p className="text-[11px] text-muted/80 leading-relaxed">Full execution traces are available immediately in the Traces directory after start.</p>
+            <p className="text-[11px] text-muted leading-relaxed">Full execution traces are available immediately in the Traces directory after start.</p>
           </div>
         </div>
       </footer>

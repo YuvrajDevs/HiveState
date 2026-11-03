@@ -28,8 +28,8 @@ export default async function TasksPage() {
   if (error) {
     return (
       <div className="p-12 text-center brutalist-border bg-red-500/5">
-        <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-red-500">Registry Sync Failed</h2>
+        <AlertTriangle className="w-12 h-12 text-bad mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-bad">Registry Sync Failed</h2>
         <p className="text-muted text-sm mt-2 font-mono-data">{error.message}</p>
       </div>
     );
@@ -37,14 +37,14 @@ export default async function TasksPage() {
 
   return (
     <div className="space-y-8 h-full flex flex-col">
-      <header className="flex items-end justify-between border-b border-white/5 pb-6">
+      <header className="flex items-end justify-between border-b border-white/10 pb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-2 uppercase tracking-tighter">Task History</h1>
           <p className="text-muted text-sm max-w-lg italic opacity-70">
             Every run across your workflows. Click a row to see its steps, cost and output.
           </p>
         </div>
-        <div className="hidden md:flex text-xs font-mono-data bg-white/5 border border-white/5 px-3 py-1 items-center gap-2 uppercase tracking-widest text-muted/85">
+        <div className="hidden md:flex text-xs font-mono-data bg-white/5 border border-white/10 px-3 py-1 items-center gap-2 uppercase tracking-widest text-muted">
           <Activity className="w-3 h-3 text-accent" />
           Running now: {tasks?.filter(t => t.status === 'running').length || 0}
         </div>

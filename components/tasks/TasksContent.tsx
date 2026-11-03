@@ -75,19 +75,19 @@ export default function TasksContent({
               className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center justify-between animate-pulse-slow shadow-[0_0_20px_rgba(239,68,68,0.1)]"
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center text-white">
+                <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center text-[#0b1220]">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-[11px] font-bold text-red-500 uppercase tracking-widest">Circuit Breaker Triggered</h3>
-                  <p className="text-xs text-muted/85 font-medium">
+                  <h3 className="text-[11px] font-bold text-bad uppercase tracking-widest">Circuit Breaker Triggered</h3>
+                  <p className="text-xs text-muted font-medium">
                     <span className="text-foreground/80">{breaker.workflow?.name || "System"}</span> halted after {breaker.consecutive_failures_count} consecutive failures.
                   </p>
                 </div>
               </div>
               <Link 
                 href={`/tasks/${breaker.id}`}
-                className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-xl text-[11px] font-bold text-red-500 uppercase tracking-widest transition-all"
+                className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-xl text-[11px] font-bold text-bad uppercase tracking-widest transition-all"
               >
                 Resolve
               </Link>
@@ -96,15 +96,15 @@ export default function TasksContent({
         </div>
       )}
       {/* Search & Filter Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white/[0.02] border border-white/5 p-4 rounded-2xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white/[0.02] border border-white/10 p-4 rounded-2xl">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted/80" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input 
             type="text"
             placeholder="Search by workflow name or run ID…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-black/20 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs focus:ring-1 focus:ring-accent/50 outline-none transition-all placeholder:text-muted/80"
+            className="w-full bg-inset/55 border border-white/15 rounded-xl py-2 pl-10 pr-4 text-xs focus:ring-1 focus:ring-accent/50 outline-none transition-all placeholder:text-muted"
           />
         </div>
 
@@ -112,7 +112,7 @@ export default function TasksContent({
           <select 
             value={filterWorkflowId}
             onChange={(e) => setFilterWorkflowId(e.target.value)}
-            className="flex-1 bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider outline-none focus:ring-1 focus:ring-accent/50 transition-all cursor-pointer"
+            className="flex-1 bg-inset/55 border border-white/15 rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider outline-none focus:ring-1 focus:ring-accent/50 transition-all cursor-pointer"
           >
             <option value="all">All workflows</option>
             {workflows.map(w => (
@@ -123,7 +123,7 @@ export default function TasksContent({
           <select 
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-40 bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider outline-none focus:ring-1 focus:ring-accent/50 transition-all cursor-pointer"
+            className="w-40 bg-inset/55 border border-white/15 rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider outline-none focus:ring-1 focus:ring-accent/50 transition-all cursor-pointer"
           >
             <option value="all">All statuses</option>
             <option value="running">Running</option>
@@ -136,7 +136,7 @@ export default function TasksContent({
           <button
             onClick={handleClearTasks}
             disabled={isClearing || initialTasks.length === 0}
-            className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-widest text-red-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed group"
+            className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-widest text-bad transition-all disabled:opacity-30 disabled:cursor-not-allowed group"
           >
             {isClearing ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -149,10 +149,10 @@ export default function TasksContent({
       </div>
 
       {filteredTasks.length > 0 ? (
-        <div className="flex-1 overflow-auto bg-surface border border-white/5 rounded-2xl relative shadow-sm no-scrollbar">
+        <div className="flex-1 overflow-auto bg-surface border border-white/10 rounded-2xl relative shadow-sm no-scrollbar">
           <table className="w-full text-left border-collapse text-[11px] font-mono-data">
             <thead>
-              <tr className="border-b border-white/5 bg-white/[0.03] text-muted/80 sticky top-0 z-10 uppercase tracking-[0.15em] h-12">
+              <tr className="border-b border-white/10 bg-white/[0.03] text-muted sticky top-0 z-10 uppercase tracking-[0.15em] h-12">
                 <th className="px-6 w-[120px] font-bold">Status</th>
                 <th className="px-4 w-[200px] font-bold">Workflow</th>
                 <th className="px-4 w-[150px] font-bold">Duration</th>
@@ -175,7 +175,7 @@ export default function TasksContent({
                           <span className="text-[11px] font-bold uppercase tracking-widest">Running</span>
                         </div>
                       ) : task.status === "completed" ? (
-                        <div className="flex items-center gap-2 text-green-500/80">
+                        <div className="flex items-center gap-2 text-ok">
                           <CheckCircle2 className="w-3 h-3" />
                           <span className="text-[11px] font-bold uppercase tracking-widest">Completed</span>
                         </div>
@@ -185,14 +185,14 @@ export default function TasksContent({
                           <span className="text-[11px] font-bold uppercase tracking-widest">Needs review</span>
                         </div>
                       ) : task.status === "paused_error" ? (
-                        <div className="flex items-center gap-2 text-red-500">
+                        <div className="flex items-center gap-2 text-bad">
                           {task.pause_reason === "circuit_breaker" ? <AlertTriangle className="w-3 h-3 animate-pulse" /> : <AlertCircle className="w-3 h-3" />}
                           <span className="text-[11px] font-bold uppercase tracking-widest">
                             {task.pause_reason === "circuit_breaker" ? "Stopped (too many failures)" : "Paused on error"}
                           </span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 text-red-500/80">
+                        <div className="flex items-center gap-2 text-bad">
                           <AlertCircle className="w-3 h-3" />
                           <span className="text-[11px] font-bold uppercase tracking-widest">Failed</span>
                         </div>
@@ -206,7 +206,7 @@ export default function TasksContent({
                               await stopTask(task.id);
                             }
                           }}
-                          className="px-2 py-1 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-md text-[11px] font-black uppercase text-red-500 transition-all"
+                          className="px-2 py-1 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-md text-[11px] font-black uppercase text-bad transition-all"
                         >
                           STOP
                         </button>
@@ -218,12 +218,12 @@ export default function TasksContent({
                       <span className="font-bold text-foreground/80 uppercase tracking-tight truncate max-w-[180px]">
                         {task.workflow?.name || "Deleted workflow"}
                       </span>
-                      <span className="text-[11px] text-muted/80 uppercase tracking-tighter">
+                      <span className="text-[11px] text-muted uppercase tracking-tighter">
                         ID: {task.id.split("-")[0]}
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 text-muted/85">
+                  <td className="px-4 text-muted">
                     <div className="flex items-center gap-2">
                       <Clock className="w-3 h-3 opacity-30" />
                       {task.total_duration_ms ? `${(task.total_duration_ms / 1000).toFixed(2)}s` : "---"}
@@ -231,21 +231,21 @@ export default function TasksContent({
                   </td>
                   <td className="px-4">
                     <div className="flex flex-col">
-                      <div className="flex items-center gap-1.5 text-accent/80 font-bold">
+                      <div className="flex items-center gap-1.5 text-accent font-bold">
                         <Wallet className="w-2.5 h-2.5 opacity-50" />
                         ₹{(task.total_cost || 0).toFixed(6)}
                       </div>
-                      <span className="text-[11px] text-muted/80 uppercase">
+                      <span className="text-[11px] text-muted uppercase">
                         {task.total_tokens || 0} Tokens
                       </span>
                     </div>
                   </td>
                   <td className="px-6 text-right">
                     <div className="flex flex-col items-end">
-                      <span className="text-muted/85 uppercase">
+                      <span className="text-muted uppercase">
                         <span suppressHydrationWarning>{formatDistanceToNow(new Date(task.started_at), { addSuffix: true })}</span>
                       </span>
-                      <span className="text-[11px] text-muted/80">
+                      <span className="text-[11px] text-muted">
                         {new Date(task.started_at).toISOString().slice(11, 19)} UTC
                       </span>
                     </div>
@@ -256,10 +256,10 @@ export default function TasksContent({
           </table>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl p-20 bg-white/[0.01]">
-          <Activity className="w-12 h-12 text-muted/5 mb-6" />
-          <h3 className="text-[12px] font-bold text-muted/80 uppercase tracking-[0.3em]">Registry Empty</h3>
-          <p className="text-[11px] text-muted/85 tracking-[0.2em] mt-2 font-mono-data uppercase italic">
+        <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/15 rounded-3xl p-20 bg-white/[0.01]">
+          <Activity className="w-12 h-12 text-muted mb-6" />
+          <h3 className="text-[12px] font-bold text-muted uppercase tracking-[0.3em]">Registry Empty</h3>
+          <p className="text-[11px] text-muted tracking-[0.2em] mt-2 font-mono-data uppercase italic">
             No active or historical tasks found in this sector.
           </p>
           <Link 

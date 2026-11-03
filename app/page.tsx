@@ -102,7 +102,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <header className="modern-card border-none bg-accent/5 p-6 relative overflow-hidden rounded-2xl">
+      <header className="modern-card tone-blue p-6 relative overflow-hidden rounded-2xl">
         <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none">
           <LayoutDashboard className="w-48 h-48" />
         </div>
@@ -119,11 +119,11 @@ export default async function DashboardPage() {
 
       {/* Needs attention */}
       {attentionRuns.length > 0 && (
-        <section aria-labelledby="attention-title" className="rounded-xl border border-yellow-500/30 bg-yellow-500/[0.06] p-4">
+        <section aria-labelledby="attention-title" className="modern-card tone-amber rounded-xl p-4">
           <h2 id="attention-title" className="mb-3 flex items-center gap-2 text-sm font-semibold text-yellow-200">
             <AlertTriangle className="h-4 w-4" /> {attentionRuns.length} run{attentionRuns.length === 1 ? "" : "s"} waiting for you
           </h2>
-          <ul className="divide-y divide-white/5">
+          <ul className="divide-y divide-white/10">
             {attentionRuns.map(r => (
               <li key={r.id} className="flex items-center justify-between gap-4 py-2.5">
                 <div className="min-w-0">
@@ -157,14 +157,14 @@ export default async function DashboardPage() {
         
         {/* Workflow List */}
         <div className="lg:col-span-3 space-y-4">
-          <div className="flex items-center justify-between border-b border-white/5 pb-2 px-1">
-            <h2 className="text-xs font-bold text-muted/85 uppercase tracking-[0.2em] flex items-center gap-2">
+          <div className="flex items-center justify-between border-b border-white/10 pb-2 px-1">
+            <h2 className="text-xs font-bold text-muted uppercase tracking-[0.2em] flex items-center gap-2">
               <Activity className="w-3 h-3 text-accent" />
               Most Used Workflows
             </h2>
             <Link 
               href="/workflows"
-              className="text-[11px] text-accent/60 hover:text-accent font-bold uppercase tracking-widest flex items-center gap-1 transition-colors"
+              className="text-[11px] text-accent hover:text-accent font-bold uppercase tracking-widest flex items-center gap-1 transition-colors"
             >
               View All <ExternalLink className="w-2.5 h-2.5" />
             </Link>
@@ -175,12 +175,12 @@ export default async function DashboardPage() {
               sortedWorkflows.map((workflow: any) => (
                 <div 
                   key={workflow.id} 
-                  className="group modern-card p-5 hover:border-accent/40 hover:bg-white/[0.02] relative overflow-hidden rounded-xl shadow-sm flex flex-col justify-between"
+                  className="group modern-card tone-cyan p-5 relative overflow-hidden rounded-xl shadow-sm flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-start justify-between mb-6">
-                      <div className="w-9 h-9 bg-white/[0.03] border border-white/5 rounded-lg flex items-center justify-center group-hover:border-accent/30 transition-all">
-                        <Command className="w-4 h-4 text-muted/85 group-hover:text-accent transition-colors" />
+                      <div className="w-9 h-9 bg-white/[0.03] border border-white/10 rounded-lg flex items-center justify-center group-hover:border-accent/30 transition-all">
+                        <Command className="w-4 h-4 text-muted group-hover:text-accent transition-colors" />
                       </div>
                       <div className="flex flex-col items-end gap-1 opacity-40">
                         <div className="flex items-center gap-1.5 ">
@@ -198,7 +198,7 @@ export default async function DashboardPage() {
                     <h3 className="font-bold text-sm mb-1 group-hover:text-accent transition-colors uppercase tracking-tight text-foreground/90">
                       {workflow.name}
                     </h3>
-                    <div className="flex items-center gap-4 text-[11px] font-mono-data text-muted/80 uppercase tracking-widest mb-6">
+                    <div className="flex items-center gap-4 text-[11px] font-mono-data text-muted uppercase tracking-widest mb-6">
                       <span className="flex items-center gap-1">{workflow.totalRuns} runs</span>
                       {workflow.lastRunTime && (
                         <span className="flex items-center gap-1">
@@ -208,10 +208,10 @@ export default async function DashboardPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-4 border-t border-white/5 relative z-10">
+                  <div className="flex items-center gap-2 pt-4 border-t border-white/10 relative z-10">
                     <Link 
                       href={`/workflows/${workflow.id}`}
-                      className="flex-1 text-center py-2 rounded-md bg-white/5 hover:bg-white/10 text-[11px] font-bold uppercase tracking-wider transition-all border border-white/5 text-muted hover:text-foreground"
+                      className="flex-1 text-center py-2 rounded-md bg-white/5 hover:bg-white/10 text-[11px] font-bold uppercase tracking-wider transition-all border border-white/10 text-muted hover:text-foreground"
                     >
                       Edit Canvas
                     </Link>
@@ -231,15 +231,15 @@ export default async function DashboardPage() {
                 </div>
               ))
             ) : (
-              <div className="col-span-full border border-dashed border-white/5 rounded-2xl p-12 flex flex-col items-center justify-center text-center bg-white/[0.01]">
-                <Command className="w-8 h-8 text-muted/85 mb-4" />
-                <h3 className="text-xs font-bold text-muted/80 uppercase tracking-[0.2em]">No workflows yet</h3>
-                <p className="text-[11px] text-muted/85 items-center justify-center max-w-[200px] mt-2 font-mono-data uppercase">
+              <div className="col-span-full border border-dashed border-white/10 rounded-2xl p-12 flex flex-col items-center justify-center text-center bg-white/[0.01]">
+                <Command className="w-8 h-8 text-muted mb-4" />
+                <h3 className="text-xs font-bold text-muted uppercase tracking-[0.2em]">No workflows yet</h3>
+                <p className="text-[11px] text-muted items-center justify-center max-w-[200px] mt-2 font-mono-data uppercase">
                   Create your first workflow from a ready-made template, or start from a blank canvas.
                 </p>
                 <Link 
                   href="/workflows" 
-                  className="mt-6 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-[11px] font-bold text-muted/80 uppercase tracking-widest hover:bg-white/10 transition-all no-underline"
+                  className="mt-6 px-4 py-2 bg-white/5 border border-white/15 rounded-lg text-[11px] font-bold text-muted uppercase tracking-widest hover:bg-white/10 transition-all no-underline"
                 >
                   Browse templates
                 </Link>
@@ -252,18 +252,18 @@ export default async function DashboardPage() {
         <aside className="space-y-4">
           <BudgetCard />
           
-          <div className="modern-card p-5 space-y-5 rounded-xl border-white/5 bg-white/[0.01]">
-            <h3 className="text-[11px] font-bold text-muted/80 uppercase tracking-[0.2em] border-b border-white/5 pb-2">At a glance</h3>
+          <div className="modern-card tone-green p-5 space-y-5 rounded-xl">
+            <h3 className="text-[11px] font-bold text-muted uppercase tracking-[0.2em] border-b border-white/10 pb-2">At a glance</h3>
             
             <div className="space-y-4">
               <div className="flex justify-between items-center group">
-                <span className="text-[11px] uppercase text-muted/85 tracking-wider">Active Tasks</span>
+                <span className="text-[11px] uppercase text-muted tracking-wider">Active Tasks</span>
                 <span className="text-lg font-bold font-mono-data tabular-nums text-foreground/80 group-hover:text-accent">
                   {(runs?.filter(r => r.status === 'running').length || 0).toString().padStart(2, '0')}
                 </span>
               </div>
               <div className="flex justify-between items-center group">
-                <span className="text-[11px] uppercase text-muted/85 tracking-wider">Success rate</span>
+                <span className="text-[11px] uppercase text-muted tracking-wider">Success rate</span>
                 <span className="text-lg font-bold font-mono-data text-accent tabular-nums">
                   {globalSuccessRate}%
                 </span>

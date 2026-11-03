@@ -15,7 +15,7 @@ export default function HITLNode({ data, selected }: any) {
       isSuccess ? "border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.1)]" :
       isFailed ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.1)]" :
       selected ? "ring-2 ring-yellow-500/50 border-yellow-500/50 shadow-[0_0_20px_rgba(234,179,8,0.15)]" : 
-      "border-white/5 shadow-xl"
+      "border-white/10 shadow-xl"
     }`}>
       {/* Input Handle */}
       <Handle type="target" position={Position.Top} className="!w-2 !h-2 !bg-yellow-500 !border-none" />
@@ -25,7 +25,7 @@ export default function HITLNode({ data, selected }: any) {
         isSuccess ? "bg-green-500/5 border-green-500/10" :
         isFailed ? "bg-red-500/5 border-red-500/10" :
         isPaused ? "bg-yellow-500/10 border-yellow-500/20" :
-        "bg-white/[0.03] border-white/5"
+        "bg-white/[0.03] border-white/10"
       }`}>
         <div className="flex items-center gap-2">
           <div className={`p-1 rounded-md transition-colors ${
@@ -34,7 +34,7 @@ export default function HITLNode({ data, selected }: any) {
             isPaused ? "bg-yellow-500/20" :
             "bg-yellow-500/10"
           }`}>
-            <UserCheck className={`w-3 h-3 ${isSuccess ? "text-green-500" : isFailed ? "text-red-500" : "text-yellow-500"}`} />
+            <UserCheck className={`w-3 h-3 ${isSuccess ? "text-ok" : isFailed ? "text-bad" : "text-yellow-500"}`} />
           </div>
           <span className="text-xs font-bold uppercase tracking-wider truncate max-w-[120px] text-foreground/90">
             {data.label || "Human Review"}
@@ -42,11 +42,11 @@ export default function HITLNode({ data, selected }: any) {
         </div>
         
         <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded-full border text-[11px] font-bold uppercase tracking-widest transition-all ${
-          isSuccess ? "bg-green-500/20 text-green-500 border-green-500/30" :
-          isFailed ? "bg-red-500/20 text-red-500 border-red-500/30" :
+          isSuccess ? "bg-green-500/20 text-ok border-green-500/30" :
+          isFailed ? "bg-red-500/20 text-bad border-red-500/30" :
           isPaused ? "bg-yellow-500/20 text-yellow-500 border-yellow-500/30 animate-pulse" :
           isRunning ? "bg-accent/20 text-accent border-accent/30" :
-          "bg-white/5 text-muted/80 border-white/5"
+          "bg-white/5 text-muted border-white/10"
         }`}>
           {isSuccess && <CheckCircle2 className="w-2 h-2" />}
           {isFailed && <XCircle className="w-2 h-2" />}
@@ -55,13 +55,13 @@ export default function HITLNode({ data, selected }: any) {
       </div>
 
       {/* Node Body */}
-      <div className="p-4 space-y-3 bg-[#0c0c0c]/50 relative">
+      <div className="p-4 space-y-3 bg-inset/70 relative">
         <div className="flex items-center gap-2 text-yellow-500/60">
           <Pause className="w-3 h-3" />
           <span className="text-[11px] font-bold uppercase tracking-[0.2em]">Manual Pause Point</span>
         </div>
 
-        <p className="text-xs font-mono-data text-muted/85 italic line-clamp-3 leading-relaxed px-1 break-words">
+        <p className="text-xs font-mono-data text-muted italic line-clamp-3 leading-relaxed px-1 break-words">
           {data.instructions || "Review previous node output before continuing."}
         </p>
 

@@ -32,7 +32,7 @@ export function StopTaskButton({ runId }: StopTaskButtonProps) {
     <button
       onClick={handleStop}
       disabled={isStopping}
-      className="w-full py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-[11px] font-bold uppercase text-red-500 transition-all relative z-10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      className="w-full py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-[11px] font-bold uppercase text-bad transition-all relative z-10 disabled:opacity-80 disabled:cursor-not-allowed flex items-center justify-center gap-2"
     >
       {isStopping ? (
         <>

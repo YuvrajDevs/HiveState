@@ -1,18 +1,31 @@
 @import "tailwindcss";
 
+/* Mid-tone slate palette: each layer is a clearly lighter or darker step so panels, wells and
+   controls separate from each other without heavy borders. */
 @theme {
-  --color-background: #0e0e0e;
-  --color-surface: #141414;
-  --color-border: #222222;
-  --color-accent: #3b82f6;
-  --color-muted: #a3a3a3;
+  --color-background: #1d2639;   /* page */
+  --color-canvas: #19212f;       /* workflow canvas, a touch deeper than the page */
+  --color-sidebar: #232e45;      /* sidebar and top bar */
+  --color-surface: #2a3650;      /* cards and panels */
+  --color-surface-hi: #34425f;   /* hovered or selected surface */
+  --color-inset: #1a2335;        /* wells, code blocks, inputs */
+  --color-border: #41506f;
+  --color-accent: #7db1ff;
+  --color-muted: #aebbd6;
+  --color-ok: #3dd9a0;
+  --color-warn: #ffc457;
+  --color-bad: #ff7a90;
+  --color-violet: #b394ff;
+  --color-cyan: #4fd8f0;
 }
 
 :root {
-  --background: #0e0e0e;
-  --foreground: #ededed;
-  --accent: #3b82f6;
-  --accent-rgb: 59, 130, 246;
+  --background: #1d2639;
+  --surface: #2a3650;
+  --border: #41506f;
+  --foreground: #f1f5fd;
+  --accent: #7db1ff;
+  --accent-rgb: 125, 177, 255;
 }
 
 body {
@@ -27,36 +40,54 @@ body {
 .bg-grid {
   background-size: 30px 30px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
 }
 
 .bg-grid-small {
   background-size: 10px 10px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
 }
 
 /* Modern UI Components */
 .modern-border {
-  border: 1px solid #222222;
+  border: 1px solid var(--border);
 }
 
 .modern-card {
-  background: #141414;
-  border: 1px solid #222222;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 22px -14px rgba(6, 10, 22, 0.7);
   transition: all 150ms ease;
 }
 
 .modern-card:hover {
-  border-color: #333333;
-  box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.5);
+  border-color: #5a6c91;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 26px -12px rgba(6, 10, 22, 0.75);
+}
+
+/* Colour-coded cards: add tone-blue / violet / cyan / green / amber / rose to a .modern-card */
+.tone-blue   { --t: 91, 155, 255; }
+.tone-violet { --t: 179, 148, 255; }
+.tone-cyan   { --t: 79, 216, 240; }
+.tone-green  { --t: 61, 217, 160; }
+.tone-amber  { --t: 255, 196, 87; }
+.tone-rose   { --t: 255, 122, 144; }
+.modern-card[class*="tone-"] {
+  background-image: linear-gradient(180deg, rgba(var(--t), 0.22), rgba(var(--t), 0.07));
+  border-color: rgba(var(--t), 0.55);
+  box-shadow: inset 0 3px 0 rgb(var(--t)), 0 10px 24px -14px rgba(6, 10, 22, 0.7);
+}
+.modern-card[class*="tone-"]:hover {
+  background-image: linear-gradient(180deg, rgba(var(--t), 0.3), rgba(var(--t), 0.1));
+  border-color: rgba(var(--t), 0.8);
 }
 
 .glass-panel {
-  background: rgba(20, 20, 20, 0.7);
+  background: rgba(42, 54, 80, 0.75);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -74,38 +105,36 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #222222;
+  background: #41506f;
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #333333;
+  background: #5a6c91;
 }
 
 /* Keep legacy classes for compatibility during transition */
-.brutalist-border, .modern-border {
-  border: 1px solid #222222;
-}
-
-.brutalist-card, .modern-card {
-  background: #141414;
-  border: 1px solid #222222;
-  border-radius: 8px;
-  transition: all 150ms ease;
-}
-
-.modern-card:hover {
-  border-color: #333333;
-  box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.5);
-}
+.brutalist-border { border: 1px solid var(--border); }
+.brutalist-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
 
 /* React Flow Customizations */
 .react-flow__edge.selected .react-flow__edge-path {
-  stroke: #3b82f6 !important;
+  stroke: #5b9bff !important;
   stroke-width: 3 !important;
-  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
+  filter: drop-shadow(0 0 8px rgba(91, 155, 255, 0.6));
 }
 
 .react-flow__edge:hover .react-flow__edge-path {
-  stroke: rgba(59, 130, 246, 0.8) !important;
+  stroke: rgba(91, 155, 255, 0.85) !important;
   cursor: pointer;
+}
+
+/* Workflow edges: visible on the lighter canvas */
+.react-flow__edge-path { stroke: #8497bd; stroke-width: 2; }
+
+/* React Flow's built-in dark mode paints #141414; use the app's canvas colour instead */
+.react-flow.dark, .react-flow {
+  --xy-background-color: #1b2535;
+  --xy-edge-stroke-default: #8497bd;
+  --xy-edge-stroke-width-default: 2;
+  --xy-edge-stroke-selected-default: #7db1ff;
 }

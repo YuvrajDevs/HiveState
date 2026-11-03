@@ -26,6 +26,16 @@ const GROUPS: { label: string; items: Item[] }[] = [
   { label: "Admin", items: [{ name: "Settings", href: "/settings", icon: Settings }] },
 ];
 
+// A distinct colour per destination so the menu is scannable at a glance
+const ICON_TONE: Record<string, string> = {
+  Dashboard: "text-accent",
+  Workflows: "text-violet",
+  "Run a workflow": "text-ok",
+  Tasks: "text-warn",
+  Traces: "text-cyan",
+  Settings: "text-slate-300",
+};
+
 type Health = { ready: boolean; database: string; geminiConfigured: boolean } | null;
 
 function usePoll<T>(url: string, ms: number, initial: T): T {
@@ -58,14 +68,14 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
 
   return (
     <>
-      {open && <div className="fixed inset-0 z-40 bg-black/60 md:hidden" onClick={onClose} aria-hidden />}
+      {open && <div className="fixed inset-0 z-40 bg-[#0d1424]/70 md:hidden" onClick={onClose} aria-hidden />}
       <aside
         aria-label="Main navigation"
-        className={`fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r border-white/10 bg-[#101010] transition-transform md:static md:z-auto md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r border-white/15 bg-sidebar transition-transform md:static md:z-auto md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between gap-2.5 border-b border-white/10 p-4">
+        <div className="flex items-center justify-between gap-2.5 border-b border-white/15 p-4">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-md border border-accent/30 bg-accent/20">
               <ShieldCheck className="h-4 w-4 text-accent" />
@@ -91,10 +101,10 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
                         href={item.href}
                         aria-current={active ? "page" : undefined}
                         className={`group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                          active ? "bg-accent/15 text-white ring-1 ring-accent/30" : "text-neutral-400 hover:bg-white/5 hover:text-white"
+                          active ? "bg-accent/15 text-white ring-1 ring-accent/30" : "text-slate-300 hover:bg-white/10 hover:text-white"
                         }`}
                       >
-                        <Icon className={`h-4 w-4 ${active ? "text-accent" : "text-neutral-500 group-hover:text-white"}`} />
+                        <Icon className={`h-4 w-4 ${ICON_TONE[item.name] ?? "text-accent"} ${active ? "" : "opacity-80 group-hover:opacity-100"}`} />
                         <span className="flex-1">{item.name}</span>
                         {item.badge && count > 0 && (
                           <span
@@ -113,11 +123,11 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
           ))}
         </nav>
 
-        <div className="border-t border-white/10 p-4">
+        <div className="border-t border-white/15 p-4">
           {health === null ? (
             <p className="text-xs text-muted">Checking setup…</p>
           ) : health.ready ? (
-            <p className="flex items-center gap-2 text-xs text-neutral-300">
+            <p className="flex items-center gap-2 text-xs text-slate-300">
               <span className="h-2 w-2 rounded-full bg-green-500" /> Connected · database &amp; Gemini ready
             </p>
           ) : (

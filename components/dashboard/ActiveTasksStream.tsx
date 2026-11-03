@@ -98,10 +98,10 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
 
   if (visibleTasks.length === 0) {
     return (
-      <div className="modern-card p-8 border-dashed border-white/5 bg-white/[0.01] rounded-2xl flex flex-col items-center justify-center text-center">
-        <Loader2 className="w-6 h-6 text-muted/85 mb-3 animate-spin" />
-        <h3 className="text-xs font-bold text-muted/80 uppercase tracking-[0.2em]">No active tasks</h3>
-        <p className="text-[11px] text-muted/85 mt-1 uppercase font-mono-data">System state: Idle</p>
+      <div className="modern-card p-8 border-dashed border-white/10 bg-white/[0.01] rounded-2xl flex flex-col items-center justify-center text-center">
+        <Loader2 className="w-6 h-6 text-muted mb-3 animate-spin" />
+        <h3 className="text-xs font-bold text-muted uppercase tracking-[0.2em]">No active tasks</h3>
+        <p className="text-[11px] text-muted mt-1 uppercase font-mono-data">System state: Idle</p>
       </div>
     );
   }
@@ -120,7 +120,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
         <div className="flex items-center gap-4">
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center gap-1 bg-white/[0.03] border border-white/5 rounded-lg p-0.5">
+            <div className="flex items-center gap-1 bg-white/[0.03] border border-white/10 rounded-lg p-0.5">
               <button 
                 onClick={() => setPage(Math.max(0, page - 1))}
                 disabled={page === 0}
@@ -128,7 +128,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <span className="text-[11px] font-mono-data text-muted/80 px-2 uppercase">
+              <span className="text-[11px] font-mono-data text-muted px-2 uppercase">
                 {page + 1} / {totalPages}
               </span>
               <button 
@@ -144,7 +144,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
           {/* Stop All Button */}
           <button
             onClick={handleStopAll}
-            className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-bold text-muted/80 uppercase tracking-widest rounded-lg transition-all"
+            className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/15 text-[11px] font-bold text-muted uppercase tracking-widest rounded-lg transition-all"
           >
             Kill Active
           </button>
@@ -179,11 +179,11 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                 className={`modern-card p-4 transition-all group rounded-xl relative flex flex-col ${
-                  isBroken ? 'bg-red-950/20 border-red-500/30 hover:bg-red-950/30 ring-1 ring-red-500/20' :
-                  isRunning ? 'bg-accent/5 border-accent/20 hover:bg-accent/10' : 
-                  isFailed ? 'bg-red-500/5 border-red-500/10 hover:bg-red-500/10' :
-                  isPaused ? 'bg-yellow-500/5 border-yellow-500/10 hover:bg-yellow-500/10' :
-                  'bg-white/[0.02] border-white/5 hover:bg-white/[0.04]'
+                  isBroken || isFailed ? 'tone-rose' :
+                  isRunning ? 'tone-blue' :
+                  isPaused ? 'tone-amber' :
+                  run.status === 'completed' ? 'tone-green' :
+                  'tone-cyan'
                 }`}
 
               >
@@ -195,10 +195,10 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
                 <div className="flex flex-col h-full relative z-10 pointer-events-none">
                   <div className="flex items-center justify-between mb-3 shrink-0">
                     <span className={`text-[11px] font-bold uppercase tracking-widest ${
-                      isBroken ? 'text-red-500 font-black' :
-                      run.status === 'running' ? 'text-accent/80' : 
-                      run.status === 'completed' ? 'text-green-500/60' :
-                      run.status === 'failed' ? 'text-red-500/60' :
+                      isBroken ? 'text-bad font-black' :
+                      run.status === 'running' ? 'text-accent' : 
+                      run.status === 'completed' ? 'text-ok' :
+                      run.status === 'failed' ? 'text-bad' :
                       'text-yellow-500/60'
                     }`}>
                       {isBroken ? 'Circuit Broken' :
@@ -212,7 +212,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
                     ) : run.status === 'completed' ? (
                       <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
                     ) : isBroken ? (
-                      <AlertCircle className="w-3 h-3 text-red-500 animate-pulse" />
+                      <AlertCircle className="w-3 h-3 text-bad animate-pulse" />
                     ) : isFailed ? (
                       <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
                     ) : (
@@ -242,14 +242,14 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
                           transition={{ duration: 0.5 }}
                         />
                       </div>
-                      <span className="text-[11px] font-mono-data text-muted/80 uppercase">
+                      <span className="text-[11px] font-mono-data text-muted uppercase">
                         {progress}%
                       </span>
                     </div>
                   </div>
 
                   {isRunning && (
-                    <div className="pointer-events-auto mt-2 pt-2 border-t border-white/5">
+                    <div className="pointer-events-auto mt-2 pt-2 border-t border-white/10">
                       <StopTaskButton runId={run.id} />
                     </div>
                   )}
@@ -270,19 +270,19 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
             className="fixed bottom-8 right-8 z-[100] modern-card border-red-500/40 bg-red-500/10 backdrop-blur-xl p-4 pr-12 rounded-2xl shadow-2xl max-w-sm"
           >
             <div className="flex items-start gap-4">
-              <div className="p-2 bg-red-500/20 rounded-lg text-red-500">
+              <div className="p-2 bg-red-500/20 rounded-lg text-bad">
                 <XCircle className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-red-500 mb-1">Execution Failure</h4>
-                <p className="text-xs text-red-500/60 leading-relaxed font-medium">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-bad mb-1">Execution Failure</h4>
+                <p className="text-xs text-bad leading-relaxed font-medium">
                   {errorNotification}
                 </p>
               </div>
             </div>
             <button 
               onClick={() => setErrorNotification(null)}
-              className="absolute top-4 right-4 text-red-500/40 hover:text-red-500"
+              className="absolute top-4 right-4 text-bad hover:text-bad"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

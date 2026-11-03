@@ -76,10 +76,10 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-lg bg-surface border border-white/5 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0d1424]/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-lg bg-surface border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         
-        <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+        <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-accent/10 rounded-lg">
               <Plus className="w-4 h-4 text-accent" />
@@ -88,14 +88,14 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
               <h2 className="text-sm font-bold uppercase tracking-widest">
                 {editingProvider ? "Edit Provider" : "Register Cluster"}
               </h2>
-              <p className="text-xs text-muted/80 uppercase tracking-tighter mt-0.5">
+              <p className="text-xs text-muted uppercase tracking-tighter mt-0.5">
                 Add an AI provider endpoint and API key
               </p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-white/5 rounded-full text-muted/80 hover:text-foreground transition-all"
+            className="p-2 hover:bg-white/5 rounded-full text-muted hover:text-foreground transition-all"
           >
             <X className="w-4 h-4" />
           </button>
@@ -104,12 +104,12 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1">Provider Engine</label>
+              <label className="text-[11px] font-bold text-muted uppercase tracking-widest px-1">Provider Engine</label>
               <select 
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wider outline-none focus:ring-1 focus:ring-accent/50 transition-all cursor-pointer"
+                className="w-full bg-inset/85 border border-white/15 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wider outline-none focus:ring-1 focus:ring-accent/50 transition-all cursor-pointer"
               >
                 <option value="gemini">Google Gemini</option>
                 <option value="openai">OpenAI (O-Series)</option>
@@ -119,21 +119,21 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
             </div>
             
             <div className="space-y-2">
-              <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1">Identification Label</label>
+              <label className="text-[11px] font-bold text-muted uppercase tracking-widest px-1">Identification Label</label>
               <input 
                 type="text"
                 placeholder="e.g. Primary Production"
                 value={formData.label}
                 onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs outline-none focus:ring-1 focus:ring-accent/50 transition-all placeholder:text-muted/85 font-bold uppercase tracking-wider"
+                className="w-full bg-inset/85 border border-white/15 rounded-xl px-4 py-3 text-xs outline-none focus:ring-1 focus:ring-accent/50 transition-all placeholder:text-muted font-bold uppercase tracking-wider"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1 flex items-center justify-between">
+            <label className="text-[11px] font-bold text-muted uppercase tracking-widest px-1 flex items-center justify-between">
                API Credentials
-               <div className="flex items-center gap-1 text-[11px] text-accent/40 lowercase italic font-normal tracking-normal">
+               <div className="flex items-center gap-1 text-[11px] text-accent lowercase italic font-normal tracking-normal">
                   <ShieldCheck className="w-2.5 h-2.5" /> End-to-end encrypted
                </div>
             </label>
@@ -143,32 +143,32 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
               placeholder={editingProvider ? "••••••••••••••••••••" : "AIzaSy... or sk-..."}
               value={formData.api_key}
               onChange={(e) => setFormData({ ...formData, api_key: e.target.value })}
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-mono-data outline-none focus:ring-1 focus:ring-accent/50 transition-all placeholder:text-muted/85"
+              className="w-full bg-inset/85 border border-white/15 rounded-xl px-4 py-3 text-xs font-mono-data outline-none focus:ring-1 focus:ring-accent/50 transition-all placeholder:text-muted"
             />
           </div>
 
           {(formData.name === 'custom' || formData.name === 'openai') && (
             <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
-              <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1">Base Endpoint (Optional)</label>
+              <label className="text-[11px] font-bold text-muted uppercase tracking-widest px-1">Base Endpoint (Optional)</label>
               <input 
                 type="url"
                 placeholder="https://api.openai.com/v1"
                 value={formData.base_url}
                 onChange={(e) => setFormData({ ...formData, base_url: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-mono-data outline-none focus:ring-1 focus:ring-accent/50 transition-all placeholder:text-muted/85"
+                className="w-full bg-inset/85 border border-white/15 rounded-xl px-4 py-3 text-xs font-mono-data outline-none focus:ring-1 focus:ring-accent/50 transition-all placeholder:text-muted"
               />
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1">Rate Limit (RPM)</label>
+              <label className="text-[11px] font-bold text-muted uppercase tracking-widest px-1">Rate Limit (RPM)</label>
               <input 
                 type="number"
                 placeholder="Unlimited"
                 value={formData.rate_limit}
                 onChange={(e) => setFormData({ ...formData, rate_limit: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-mono-data outline-none focus:ring-1 focus:ring-accent/50 transition-all placeholder:text-muted/85"
+                className="w-full bg-inset/85 border border-white/15 rounded-xl px-4 py-3 text-xs font-mono-data outline-none focus:ring-1 focus:ring-accent/50 transition-all placeholder:text-muted"
               />
             </div>
             
@@ -178,14 +178,14 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
                 type="checkbox"
                 checked={formData.is_default}
                 onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
-                className="w-4 h-4 rounded border-white/10 bg-black/40 text-accent focus:ring-accent/50 transition-all"
+                className="w-4 h-4 rounded border-white/15 bg-inset/85 text-accent focus:ring-accent/50 transition-all"
               />
-              <label htmlFor="is_default" className="text-[11px] font-bold text-muted/85 uppercase tracking-widest cursor-pointer">Set as Primary</label>
+              <label htmlFor="is_default" className="text-[11px] font-bold text-muted uppercase tracking-widest cursor-pointer">Set as Primary</label>
             </div>
           </div>
 
           {error && (
-            <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs font-bold uppercase tracking-widest">
+            <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-bad text-xs font-bold uppercase tracking-widest">
               <ShieldAlert className="w-4 h-4 shrink-0" />
               {error}
             </div>
@@ -195,14 +195,14 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
             <button 
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 border border-white/5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-all"
+              className="flex-1 py-3 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-all"
             >
               Cancel
             </button>
             <button 
               type="submit"
               disabled={loading}
-              className="flex-[2] py-3 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl text-xs tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg shadow-accent/20 disabled:opacity-50"
+              className="flex-[2] py-3 bg-accent hover:bg-accent/90 text-[#0b1220] font-bold rounded-xl text-xs tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg shadow-accent/20 disabled:opacity-50"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               {editingProvider ? "Update Provider" : "Register Cluster"}

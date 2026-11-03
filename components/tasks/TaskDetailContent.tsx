@@ -119,8 +119,8 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
         <div className="md:col-span-2 modern-card p-4 flex items-center justify-between bg-white/[0.02]">
           <div className="flex items-center gap-4">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              run.status === "completed" ? "bg-green-500/10 text-green-500" :
-              run.status === "failed" || run.status === "paused_error" ? "bg-red-500/10 text-red-500" :
+              run.status === "completed" ? "bg-green-500/10 text-ok" :
+              run.status === "failed" || run.status === "paused_error" ? "bg-red-500/10 text-bad" :
               "bg-yellow-500/10 text-yellow-500"
             }`}>
               {run.status === "running" || run.status === "resumed" ? <Activity className="w-5 h-5 animate-pulse" /> : 
@@ -129,7 +129,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                <AlertOctagon className="w-5 h-5" />}
             </div>
             <div>
-              <div className="text-xs text-muted/80 uppercase font-bold tracking-widest mb-0.5">Execution Status</div>
+              <div className="text-xs text-muted uppercase font-bold tracking-widest mb-0.5">Execution Status</div>
               <h1 className="text-sm font-bold uppercase tracking-tight flex items-center gap-2">
                 {run.status === "running" ? "Runner Active" : 
                  run.status === "resumed" ? "System Resuming" :
@@ -142,7 +142,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
           </div>
           <div className="text-right flex items-center gap-4">
             <div>
-              <div className="text-xs text-muted/80 uppercase font-bold tracking-widest mb-0.5">Progress</div>
+              <div className="text-xs text-muted uppercase font-bold tracking-widest mb-0.5">Progress</div>
               <div className="text-sm font-mono-data font-bold text-foreground/70">{progressPercent}%</div>
             </div>
             
@@ -157,26 +157,26 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
         </div>
 
         {/* Compute Metrics */}
-        <div className="modern-card p-4 bg-white/[0.02] border border-white/5">
-          <div className="text-[11px] text-muted/80 uppercase font-bold tracking-widest mb-2 flex items-center gap-2">
+        <div className="modern-card tone-cyan p-4">
+          <div className="text-[11px] text-muted uppercase font-bold tracking-widest mb-2 flex items-center gap-2">
             <Database className="w-3 h-3" /> Compute
           </div>
           <div className="flex items-end justify-between">
             <div className="text-lg font-mono-data font-bold text-accent">₹{(run.total_cost || 0).toFixed(6)}</div>
-            <div className="text-xs font-mono-data text-muted/80 mb-1">{run.total_tokens || 0} Toks</div>
+            <div className="text-xs font-mono-data text-muted mb-1">{run.total_tokens || 0} Toks</div>
           </div>
         </div>
 
         {/* Time Metrics */}
-        <div className="modern-card p-4 bg-white/[0.02] border border-white/5">
-          <div className="text-[11px] text-muted/80 uppercase font-bold tracking-widest mb-2 flex items-center gap-2">
+        <div className="modern-card tone-violet p-4">
+          <div className="text-[11px] text-muted uppercase font-bold tracking-widest mb-2 flex items-center gap-2">
             <Clock className="w-3 h-3" /> Runtime
           </div>
           <div className="flex items-end justify-between">
             <div className="text-lg font-mono-data font-bold text-foreground/80">
               {run.total_duration_ms ? `${(run.total_duration_ms / 1000).toFixed(1)}s` : "---"}
             </div>
-            <div className="text-xs font-mono-data text-muted/80 mb-1 flex items-center gap-1">
+            <div className="text-xs font-mono-data text-muted mb-1 flex items-center gap-1">
                {totalSteps} Steps
             </div>
           </div>
@@ -191,7 +191,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-center gap-5">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                run.status === "paused_error" ? "bg-red-500 text-white" : "bg-yellow-500 text-black"
+                run.status === "paused_error" ? "bg-red-500 text-[#0b1220]" : "bg-yellow-500 text-black"
               }`}>
                 {run.status === "paused_error" ? <AlertTriangle className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
               </div>
@@ -204,7 +204,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                     : run.status === "paused_error" ? "Execution Halted: Error Detected" : "Human Approval Required"}
                 </h2>
 
-                <p className="text-xs text-muted/85 font-medium leading-relaxed">
+                <p className="text-xs text-muted font-medium leading-relaxed">
                   {run.pause_reason === "circuit_breaker"
                     ? `System halted after ${run.consecutive_failures_count} consecutive failures to prevent unstable execution. Review the failure logs below.`
                     : run.pause_reason === "budget_limit"
@@ -228,7 +228,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                     setIsSubmitting(false);
                   }}
                   disabled={isSubmitting}
-                  className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-red-500/20 transition-all flex items-center gap-2"
+                  className="px-6 py-3 bg-red-500 hover:bg-red-600 text-[#0b1220] rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-red-500/20 transition-all flex items-center gap-2"
                 >
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
                   {run.circuit_breaker_triggered ? "Reset & Retry" : "Debug & Resume"}
@@ -244,7 +244,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                       setIsSubmitting(false);
                     }}
                     disabled={isSubmitting}
-                    className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-green-500/20 transition-all flex items-center gap-2"
+                    className="px-6 py-3 bg-green-500 hover:bg-green-600 text-[#0b1220] rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-green-500/20 transition-all flex items-center gap-2"
                   >
                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                     Approve & Resume
@@ -261,7 +261,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                       setIsPolling(false);
                     }}
                     disabled={isSubmitting}
-                    className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-foreground/80 rounded-xl font-bold uppercase tracking-widest text-xs transition-all"
+                    className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/15 text-foreground/80 rounded-xl font-bold uppercase tracking-widest text-xs transition-all"
                   >
                     Reject Sequence
                   </button>
@@ -272,8 +272,8 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
           </div>
 
           {/* Correction / Edit Area */}
-          <div className="mt-6 p-4 bg-black/40 rounded-xl border border-white/5 space-y-4">
-             <div className="flex items-center gap-2 text-[11px] font-bold text-muted/80 uppercase tracking-widest">
+          <div className="mt-6 p-4 bg-inset/85 rounded-xl border border-white/10 space-y-4">
+             <div className="flex items-center gap-2 text-[11px] font-bold text-muted uppercase tracking-widest">
                 <Code2 className="w-3.5 h-3.5" /> 
                 {run.status === "paused_error" ? "Node Input Overlay (Editable)" : "Correction / Metadata Note"}
              </div>
@@ -281,14 +281,14 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                <textarea 
                 value={editedInput}
                 onChange={(e) => setEditedInput(e.target.value)}
-                className="w-full bg-white/[0.02] border border-white/10 rounded-lg p-4 text-[12px] font-mono-data text-[#ebcb8b] min-h-[150px] focus:outline-none focus:border-red-500/30 transition-colors"
+                className="w-full bg-white/[0.02] border border-white/15 rounded-lg p-4 text-[12px] font-mono-data text-[#ebcb8b] min-h-[150px] focus:outline-none focus:border-red-500/30 transition-colors"
                 placeholder="Adjust payload logic..."
                />
              ) : (
                <textarea 
                 value={correctionNote}
                 onChange={(e) => setCorrectionNote(e.target.value)}
-                className="w-full bg-white/[0.02] border border-white/10 rounded-lg p-3 text-[12px] font-mono-data text-foreground/70 min-h-[80px] focus:outline-none focus:border-yellow-500/30 transition-colors"
+                className="w-full bg-white/[0.02] border border-white/15 rounded-lg p-3 text-[12px] font-mono-data text-foreground/70 min-h-[80px] focus:outline-none focus:border-yellow-500/30 transition-colors"
                 placeholder="Add reasoning for rejection or specific instructions..."
                />
              )}
@@ -310,18 +310,18 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
       <div className="flex-1 flex gap-6 min-h-0">
         
         {/* 1. Left Panel: Vertical Timeline */}
-        <div className="w-80 flex-shrink-0 bg-surface border border-white/5 rounded-2xl overflow-y-auto no-scrollbar relative flex flex-col">
-          <div className="sticky top-0 bg-surface/80 backdrop-blur-xl z-20 p-4 border-b border-white/5 flex items-center justify-between">
-            <h2 className="text-xs font-bold text-muted/80 uppercase tracking-[0.2em] flex items-center gap-2">
+        <div className="w-80 flex-shrink-0 bg-surface border border-white/10 rounded-2xl overflow-y-auto no-scrollbar relative flex flex-col">
+          <div className="sticky top-0 bg-surface/80 backdrop-blur-xl z-20 p-4 border-b border-white/10 flex items-center justify-between">
+            <h2 className="text-xs font-bold text-muted uppercase tracking-[0.2em] flex items-center gap-2">
               <Layers className="w-3.5 h-3.5" /> Sequence Timeline
             </h2>
-            <div className="text-[11px] font-mono-data text-muted/80">
+            <div className="text-[11px] font-mono-data text-muted">
               {logs.length} Nodes
             </div>
           </div>
           
           <div className="p-4 flex-1">
-            <div className="relative border-l border-white/5 ml-4 space-y-4 pb-6">
+            <div className="relative border-l border-white/10 ml-4 space-y-4 pb-6">
               {logs.length === 0 ? (
                 <div className="py-20 text-center flex flex-col items-center justify-center gap-4 opacity-20">
                   <Loader2 className="w-6 h-6 animate-spin text-accent" />
@@ -356,21 +356,21 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                         p-3 rounded-xl border transition-all duration-200
                         ${isSelected 
                           ? isFailed ? 'bg-red-500/10 border-red-500/30' : 'bg-accent/10 border-accent/20 shadow-[0_8px_30px_rgba(0,0,0,0.3)]' 
-                          : 'bg-white/[0.01] border-white/5 hover:bg-white/[0.03]'}
+                          : 'bg-white/[0.01] border-white/10 hover:bg-white/[0.03]'}
                       `}>
                         <div className="flex items-center justify-between gap-2 overflow-hidden mb-2">
-                          <span className={`text-xs font-bold uppercase tracking-tight truncate flex-1 ${isSelected ? 'text-foreground' : 'text-muted/85'}`}>
+                          <span className={`text-xs font-bold uppercase tracking-tight truncate flex-1 ${isSelected ? 'text-foreground' : 'text-muted'}`}>
                             {log.node_name || log.agent?.name || "Autonomous Agent"}
                           </span>
-                          <span className="text-[11px] font-mono-data text-muted/80 shrink-0">STEP_{index + 1}</span>
+                          <span className="text-[11px] font-mono-data text-muted shrink-0">STEP_{index + 1}</span>
                         </div>
                         
                         <div className="flex items-center gap-3 text-[11px] font-mono-data opacity-60">
-                          <div className={`flex items-center gap-1 ${isSelected ? 'text-foreground/60' : 'text-muted/80'}`}>
+                          <div className={`flex items-center gap-1 ${isSelected ? 'text-foreground/60' : 'text-muted'}`}>
                             <Clock className="w-2.5 h-2.5 opacity-50" />
                             {log.duration_ms || 0}ms
                           </div>
-                          <div className={`flex items-center gap-1 ${isSelected ? 'text-accent' : 'text-accent/30'}`}>
+                          <div className={`flex items-center gap-1 ${isSelected ? 'text-accent' : 'text-accent'}`}>
                             <Coins className="w-2.5 h-2.5 opacity-50" />
                             ₹{(log.step_cost || 0).toFixed(5)}
                           </div>
@@ -385,14 +385,14 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
         </div>
 
         {/* 2. Right Panel: Deep Inspection details */}
-        <div className="flex-1 bg-surface border border-white/5 rounded-2xl flex flex-col overflow-hidden relative shadow-2xl">
+        <div className="flex-1 bg-surface border border-white/10 rounded-2xl flex flex-col overflow-hidden relative shadow-2xl">
           {selectedLog ? (
             <>
-              <div className="p-4 border-b border-white/5 flex items-center justify-between bg-black/40 backdrop-blur-md sticky top-0 z-10">
+              <div className="p-4 border-b border-white/10 flex items-center justify-between bg-inset/85 backdrop-blur-md sticky top-0 z-10">
                 <div className="flex items-center gap-4">
                   <div className={`p-2 rounded-lg ${
-                    selectedLog.status === "success" ? "bg-green-500/10 text-green-500" :
-                    selectedLog.status === "failed" ? "bg-red-500/10 text-red-500" :
+                    selectedLog.status === "success" ? "bg-green-500/10 text-ok" :
+                    selectedLog.status === "failed" ? "bg-red-500/10 text-bad" :
                     "bg-yellow-500/10 text-yellow-500"
                   }`}>
                     {selectedLog.status === "success" ? <CheckCircle2 className="w-4 h-4" /> : 
@@ -401,31 +401,31 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                   </div>
                   <div>
                     <h2 className="text-sm font-bold tracking-tight uppercase tracking-wider">{selectedLog.node_name || selectedLog.agent?.name || "System Process"}</h2>
-                    <div className="text-[11px] text-muted/80 font-mono-data uppercase tracking-[0.2em] mt-0.5">
+                    <div className="text-[11px] text-muted font-mono-data uppercase tracking-[0.2em] mt-0.5">
                       Execution Step ID: {selectedLog.id.split("-")[0]}
                     </div>
                   </div>
                 </div>
                 
-                  <div className="flex items-center gap-4 bg-white/[0.03] border border-white/5 rounded-xl px-3 py-1.5">
-                    <div className="flex items-center gap-2 border-r border-white/10 pr-3">
-                      <Database className="w-3 h-3 text-accent/60" />
+                  <div className="flex items-center gap-4 bg-white/[0.03] border border-white/10 rounded-xl px-3 py-1.5">
+                    <div className="flex items-center gap-2 border-r border-white/15 pr-3">
+                      <Database className="w-3 h-3 text-accent" />
                       <div className="font-mono-data text-xs">
-                        <span className="text-muted/80 uppercase">Prompt:</span>
+                        <span className="text-muted uppercase">Prompt:</span>
                         <span className="ml-1 font-bold text-accent">{selectedLog.prompt_tokens || 0}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 border-r border-white/10 pr-3">
-                      <Zap className="w-3 h-3 text-accent/60" />
+                    <div className="flex items-center gap-2 border-r border-white/15 pr-3">
+                      <Zap className="w-3 h-3 text-accent" />
                       <div className="font-mono-data text-xs">
-                        <span className="text-muted/80 uppercase">Completion:</span>
+                        <span className="text-muted uppercase">Completion:</span>
                         <span className="ml-1 font-bold text-accent">{selectedLog.completion_tokens || 0}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Activity className="w-3 h-3 text-accent/60" />
+                      <Activity className="w-3 h-3 text-accent" />
                       <div className="font-mono-data text-xs">
-                        <span className="text-muted/80 uppercase">Total:</span>
+                        <span className="text-muted uppercase">Total:</span>
                         <span className="ml-1 font-bold text-accent">{selectedLog.total_tokens || 0}</span>
                       </div>
                     </div>
@@ -438,7 +438,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                 {run.status === "completed" && lastSuccessfulLog && (
                   <div className="space-y-4 animate-in fade-in zoom-in-95 duration-500">
                     <div className="flex items-center justify-between border-b border-green-500/20 pb-2">
-                       <h3 className="text-xs font-bold text-green-500 uppercase tracking-widest flex items-center gap-2">
+                       <h3 className="text-xs font-bold text-ok uppercase tracking-widest flex items-center gap-2">
                         <Zap className="w-3.5 h-3.5 fill-current" /> Final System Output
                       </h3>
                       <button 
@@ -450,7 +450,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                       </button>
                     </div>
                     <div className="bg-green-500/[0.03] border border-green-500/20 rounded-2xl p-6 relative group overflow-hidden shadow-[0_0_20px_rgba(34,197,94,0.05)]">
-                      <div className="absolute top-0 right-0 p-4 opacity-[0.03] text-green-500 group-hover:scale-110 transition-transform">
+                      <div className="absolute top-0 right-0 p-4 opacity-[0.03] text-ok group-hover:scale-110 transition-transform">
                         <CheckCircle2 className="w-24 h-24" />
                       </div>
                       <div className="relative z-10 text-[13px] leading-relaxed text-foreground/90 font-medium font-mono-data whitespace-pre-wrap">
@@ -463,16 +463,16 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                 {/* Error Block */}
                 {selectedLog.status === "failed" && selectedLog.error && (
                   <div className="border border-red-500/20 bg-red-500/5 rounded-2xl p-6">
-                    <div className="flex items-center gap-2 text-red-500 mb-4">
+                    <div className="flex items-center gap-2 text-bad mb-4">
                       <AlertOctagon className="w-4 h-4" />
                       <h3 className="text-xs font-bold uppercase tracking-widest">Critical Execution Failure</h3>
                     </div>
-                    <div className="bg-black/40 rounded-xl p-4 border border-red-500/10">
-                      <pre className="text-[11px] font-mono-data text-red-400 whitespace-pre-wrap leading-relaxed">
+                    <div className="bg-inset/85 rounded-xl p-4 border border-red-500/10">
+                      <pre className="text-[11px] font-mono-data text-bad whitespace-pre-wrap leading-relaxed">
                         {selectedLog.error}
                       </pre>
                       {selectedLog.error_code && (
-                        <div className="mt-4 pt-4 border-t border-red-500/10 text-[11px] uppercase tracking-widest font-bold text-red-500/40">
+                        <div className="mt-4 pt-4 border-t border-red-500/10 text-[11px] uppercase tracking-widest font-bold text-bad">
                           Error Code: {selectedLog.error_code}
                         </div>
                       )}
@@ -482,19 +482,19 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
 
                 {/* Technical Inspector: Payload Breakdown */}
                 <div className="space-y-6">
-                  <div className="flex items-center gap-2 pb-2 border-b border-white/5">
-                    <Terminal className="w-3.5 h-3.5 text-muted/80" />
-                    <h3 className="text-xs font-bold text-muted/85 uppercase tracking-widest">Payload Inspector</h3>
+                  <div className="flex items-center gap-2 pb-2 border-b border-white/10">
+                    <Terminal className="w-3.5 h-3.5 text-muted" />
+                    <h3 className="text-xs font-bold text-muted uppercase tracking-widest">Payload Inspector</h3>
                   </div>
 
                   {/* Input */}
                   <div className="space-y-3">
-                    <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1 flex items-center gap-2">
+                    <label className="text-[11px] font-bold text-muted uppercase tracking-widest px-1 flex items-center gap-2">
                        <ChevronRight className="w-3 h-3" /> Input Context
                     </label>
-                    <div className="bg-black/60 border border-white/5 rounded-xl overflow-hidden">
+                    <div className="bg-inset border border-white/10 rounded-xl overflow-hidden">
                       {selectedLog.input && selectedLog.input.startsWith('{"inputs":') ? (
-                        <div className="divide-y divide-white/5">
+                        <div className="divide-y divide-white/10">
                           {(() => {
                             try {
                               const parsed = JSON.parse(selectedLog.input);
@@ -510,7 +510,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                                 </div>
                               ));
                             } catch (e) {
-                              return <pre className="p-4 text-[12px] font-mono-data text-red-400">{selectedLog.input}</pre>;
+                              return <pre className="p-4 text-[12px] font-mono-data text-bad">{selectedLog.input}</pre>;
                             }
                           })()}
                         </div>
@@ -527,10 +527,10 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                   {/* Output */}
                   {selectedLog.output && (
                     <div className="space-y-3">
-                      <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1 flex items-center gap-2">
+                      <label className="text-[11px] font-bold text-muted uppercase tracking-widest px-1 flex items-center gap-2">
                         <ChevronRight className="w-3 h-3" /> Output Payload
                       </label>
-                      <div className="bg-black/60 border border-white/5 rounded-xl p-4">
+                      <div className="bg-inset border border-white/10 rounded-xl p-4">
                         <pre className="text-[12px] font-mono-data text-[#a3be8c]/90 whitespace-pre-wrap leading-relaxed max-h-[400px] overflow-y-auto no-scrollbar">
                           {typeof selectedLog.output === 'object' 
                             ? JSON.stringify(selectedLog.output, null, 2) 
@@ -543,11 +543,11 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                    {/* System Instruction */}
                    {selectedLog.system_prompt && (
                     <div className="space-y-3">
-                      <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1 flex items-center gap-2">
+                      <label className="text-[11px] font-bold text-muted uppercase tracking-widest px-1 flex items-center gap-2">
                         <ChevronRight className="w-3 h-3" /> System Strategy
                       </label>
-                      <div className="bg-black/60 border border-white/5 rounded-xl p-4">
-                        <pre className="text-[11px] font-mono-data text-accent/40 whitespace-pre-wrap leading-relaxed max-h-[200px] overflow-y-auto no-scrollbar">
+                      <div className="bg-inset border border-white/10 rounded-xl p-4">
+                        <pre className="text-[11px] font-mono-data text-accent whitespace-pre-wrap leading-relaxed max-h-[200px] overflow-y-auto no-scrollbar">
                           {selectedLog.system_prompt}
                         </pre>
                       </div>
@@ -570,7 +570,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
       {/* Completion Modal */}
       <AnimatePresence>
         {showCompletionModal && lastSuccessfulLog && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#0d1424]/70 backdrop-blur-sm">
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -579,18 +579,18 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
             >
               <div className="p-8 space-y-6">
                 <div className="flex items-center gap-5">
-                  <div className="w-16 h-16 rounded-2xl bg-green-500/20 text-green-500 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-2xl bg-green-500/20 text-ok flex items-center justify-center">
                     <CheckCircle2 className="w-8 h-8" />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold uppercase tracking-tight">Sequence Successfully Completed</h2>
-                    <p className="text-sm text-muted/80 font-medium">Global state finalized and persisted to vector engine.</p>
+                    <p className="text-sm text-muted font-medium">Global state finalized and persisted to vector engine.</p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-muted/80 uppercase tracking-[0.2em]">Final Intelligence Payload</label>
+                    <label className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Final Intelligence Payload</label>
                     <button 
                       onClick={() => copyToClipboard(lastSuccessfulLog.output?.toString() || "")}
                       className="text-xs font-bold text-accent uppercase tracking-widest flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -599,7 +599,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                       {copied ? "Result Copied" : "Copy to Clipboard"}
                     </button>
                   </div>
-                  <div className="bg-black/40 border border-white/5 rounded-2xl p-6 overflow-y-auto max-h-[300px] no-scrollbar">
+                  <div className="bg-inset/85 border border-white/10 rounded-2xl p-6 overflow-y-auto max-h-[300px] no-scrollbar">
                     <pre className="text-sm font-mono-data text-foreground/80 whitespace-pre-wrap leading-relaxed">
                       {lastSuccessfulLog.output?.toString() || "Success acknowledged by engine."}
                     </pre>
@@ -616,7 +616,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                   </Link>
                   <button
                     onClick={() => setShowCompletionModal(false)}
-                    className="py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-bold uppercase tracking-widest text-xs text-foreground/60 transition-all"
+                    className="py-4 bg-white/5 hover:bg-white/10 border border-white/15 rounded-2xl font-bold uppercase tracking-widest text-xs text-foreground/60 transition-all"
                   >
                     Dismiss Trace
                   </button>

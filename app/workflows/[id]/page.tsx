@@ -281,19 +281,19 @@ export default function WorkflowCanvasPage() {
   }
 
   return (
-    <div className="absolute inset-0 flex flex-col bg-[#080808]">
+    <div className="absolute inset-0 flex flex-col bg-canvas">
       {/* Top Bar */}
-      <header className="h-14 glass-panel border-b border-white/5 flex items-center justify-between px-4 z-10">
+      <header className="h-14 glass-panel border-b border-white/10 flex items-center justify-between px-4 z-10">
         <div className="flex items-center gap-3">
           <Link 
             href={executionRunId ? `/tasks/${executionRunId}` : "/"} 
-            className="p-1.5 hover:bg-white/5 rounded-md text-muted/85 hover:text-accent transition-all"
+            className="p-1.5 hover:bg-white/5 rounded-md text-muted hover:text-accent transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div className="h-4 w-px bg-white/10 mx-1" />
           <div className="flex flex-col">
-            <span className="text-[11px] text-muted/80 font-mono-data tracking-[0.2em] uppercase">Workflow // Editor</span>
+            <span className="text-[11px] text-muted font-mono-data tracking-[0.2em] uppercase">Workflow // Editor</span>
             <h1 className="text-xs font-bold uppercase tracking-tight text-foreground/90">{workflowName}</h1>
           </div>
         </div>
@@ -301,7 +301,7 @@ export default function WorkflowCanvasPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={addNode}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-wider transition-all text-muted hover:text-foreground"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/15 bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-wider transition-all text-muted hover:text-foreground"
           >
             <Plus className="w-3 h-3 text-accent" />
             Add Agent
@@ -320,7 +320,7 @@ export default function WorkflowCanvasPage() {
               setNodes((nds) => nds.concat(newNode));
               setSelectedNodeId(newNode.id);
             }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-wider transition-all text-muted hover:text-foreground"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/15 bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-wider transition-all text-muted hover:text-foreground"
           >
             <Pause className="w-3 h-3 text-yellow-500" />
             Add HITL
@@ -337,7 +337,7 @@ export default function WorkflowCanvasPage() {
           <button 
             onClick={() => setShowRunModal(true)}
             disabled={isExecuting}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-md bg-green-600/10 border border-green-600/20 text-green-500 hover:bg-green-600/20 text-xs font-bold uppercase tracking-wider transition-all group"
+            className="flex items-center gap-2 px-4 py-1.5 rounded-md bg-green-600/10 border border-green-600/20 text-ok hover:bg-green-600/20 text-xs font-bold uppercase tracking-wider transition-all group"
           >
             {isExecuting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-current group-hover:scale-110 transition-transform" />}
             Execute
@@ -367,19 +367,19 @@ export default function WorkflowCanvasPage() {
             <div className="h-4 w-px bg-white/5" />
 
             <div className="flex items-center gap-2 max-w-[300px] truncate">
-              <span className="text-[11px] text-muted/80 uppercase font-mono-data shrink-0">Input:</span>
-              <span className="text-xs text-muted/85 truncate italic">"{runData?.input_prompt || "..."}"</span>
+              <span className="text-[11px] text-muted uppercase font-mono-data shrink-0">Input:</span>
+              <span className="text-xs text-muted truncate italic">"{runData?.input_prompt || "..."}"</span>
             </div>
             
             <div className="h-4 w-px bg-white/5" />
             
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-muted/80 uppercase font-mono-data">Compute:</span>
+                <span className="text-[11px] text-muted uppercase font-mono-data">Compute:</span>
                 <span className="text-xs font-mono-data font-bold text-accent">₹{(runData?.total_cost || 0).toFixed(5)}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-muted/80 uppercase font-mono-data">Tokens:</span>
+                <span className="text-[11px] text-muted uppercase font-mono-data">Tokens:</span>
                 <span className="text-xs font-mono-data font-bold text-foreground/60">{runData?.total_tokens || 0}</span>
               </div>
             </div>
@@ -396,7 +396,7 @@ export default function WorkflowCanvasPage() {
              )}
              <button 
                 onClick={() => setExecutionRunId(null)}
-                className="p-1 hover:bg-white/5 rounded text-muted/80 hover:text-foreground transition-colors"
+                className="p-1 hover:bg-white/5 rounded text-muted hover:text-foreground transition-colors"
                 title="Exit Live View"
              >
                 <X className="w-3 h-3" />
@@ -409,11 +409,11 @@ export default function WorkflowCanvasPage() {
       {showRunModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowRunModal(false)} />
-          <div className="relative w-full max-w-lg modern-card bg-[#141414] rounded-2xl p-6 border-white/5 shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-lg modern-card bg-surface rounded-2xl p-6 border-white/10 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
-                  <Play className="w-4 h-4 text-green-500 fill-current" />
+                  <Play className="w-4 h-4 text-ok fill-current" />
                 </div>
                 <h2 className="text-sm font-bold uppercase tracking-widest">Run this workflow</h2>
               </div>
@@ -428,7 +428,7 @@ export default function WorkflowCanvasPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between px-1">
-                  <label className="text-[11px] font-bold text-muted/80 uppercase tracking-[0.2em]">Initial InputContext</label>
+                  <label className="text-[11px] font-bold text-muted uppercase tracking-[0.2em]">Initial InputContext</label>
                   <span className="text-[11px] font-mono-data text-accent opacity-40 uppercase italic">Pipeline_Ready</span>
                 </div>
                 <textarea 
@@ -436,7 +436,7 @@ export default function WorkflowCanvasPage() {
                   value={runInput}
                   onChange={(e) => setRunInput(e.target.value)}
                   placeholder="Provide the initial prompt or data for the workflow..."
-                  className="w-full h-32 bg-white/[0.02] border border-white/5 p-4 rounded-xl text-xs leading-relaxed focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all outline-none resize-none tracking-tight"
+                  className="w-full h-32 bg-white/[0.02] border border-white/10 p-4 rounded-xl text-xs leading-relaxed focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all outline-none resize-none tracking-tight"
                 />
               </div>
 
@@ -457,16 +457,16 @@ export default function WorkflowCanvasPage() {
       {inspectingNode && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setInspectingNode(null)} />
-          <div className="relative w-full max-w-2xl modern-card bg-[#0a0a0a] rounded-3xl border-white/5 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
-            <div className="p-6 border-b border-white/5 flex items-center justify-between">
+          <div className="relative w-full max-w-2xl modern-card bg-inset rounded-3xl border-white/10 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
+            <div className="p-6 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="p-2 bg-accent/10 rounded-xl">
-                  {inspectingNode.type === 'input' ? <ChevronRight className="w-5 h-5 text-accent" /> : <ChevronRight className="w-5 h-5 text-green-500 rotate-90" />}
+                  {inspectingNode.type === 'input' ? <ChevronRight className="w-5 h-5 text-accent" /> : <ChevronRight className="w-5 h-5 text-ok rotate-90" />}
                 </div>
                 <div>
                   <h3 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
                     Node {inspectingNode.type === 'input' ? 'Input' : 'Output'}
-                    <span className="text-xs text-muted/80 font-mono-data ml-2">[{nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data?.label || "Agent"}]</span>
+                    <span className="text-xs text-muted font-mono-data ml-2">[{nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data?.label || "Agent"}]</span>
                   </h3>
                 </div>
               </div>
@@ -479,8 +479,8 @@ export default function WorkflowCanvasPage() {
             </div>
             
             <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar font-mono-data">
-              <div className="bg-black/60 border border-white/5 rounded-2xl p-6 relative group">
-                <div className="absolute top-4 right-4 text-[11px] font-bold text-muted/80 uppercase tracking-widest">{inspectingNode.type}</div>
+              <div className="bg-inset border border-white/10 rounded-2xl p-6 relative group">
+                <div className="absolute top-4 right-4 text-[11px] font-bold text-muted uppercase tracking-widest">{inspectingNode.type}</div>
                 <pre className="text-[12px] leading-relaxed whitespace-pre-wrap text-foreground/80">
                   {inspectingNode.type === 'input' 
                     ? nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog?.input || "NO_INPUT_FOUND"
@@ -490,19 +490,19 @@ export default function WorkflowCanvasPage() {
 
               {inspectingNode.type === 'output' && nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog && (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <div className="text-[11px] text-muted/80 uppercase font-bold mb-1">Tokens Used</div>
+                  <div className="p-4 bg-white/[0.02] border border-white/10 rounded-xl">
+                    <div className="text-[11px] text-muted uppercase font-bold mb-1">Tokens Used</div>
                     <div className="text-xs font-bold text-accent">{nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog.total_tokens}</div>
                   </div>
-                  <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <div className="text-[11px] text-muted/80 uppercase font-bold mb-1">Step Cost</div>
-                    <div className="text-xs font-bold text-green-500">₹{nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog.step_cost.toFixed(5)}</div>
+                  <div className="p-4 bg-white/[0.02] border border-white/10 rounded-xl">
+                    <div className="text-[11px] text-muted uppercase font-bold mb-1">Step Cost</div>
+                    <div className="text-xs font-bold text-ok">₹{nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog.step_cost.toFixed(5)}</div>
                   </div>
                 </div>
               )}
             </div>
             
-            <div className="p-6 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
+            <div className="p-6 border-t border-white/10 bg-white/[0.01] flex items-center justify-between">
               <button 
                 onClick={() => setInspectingNode(null)}
                 className="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold uppercase tracking-widest text-muted transition-all"
@@ -510,13 +510,13 @@ export default function WorkflowCanvasPage() {
                 Close
               </button>
               <div className="flex items-center gap-4">
-                <span className="text-xs font-mono-data text-muted/80 uppercase tracking-widest hidden md:inline">
+                <span className="text-xs font-mono-data text-muted uppercase tracking-widest hidden md:inline">
                   Seq_ID: {executionRunId?.split("-")[0] || "N/A"}
                 </span>
                 {executionRunId && (
                   <Link 
                     href={`/tasks/${executionRunId}`}
-                    className="flex items-center gap-2 px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-bold uppercase tracking-widest text-muted/85 transition-all no-underline"
+                    className="flex items-center gap-2 px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/15 rounded-lg text-[11px] font-bold uppercase tracking-widest text-muted transition-all no-underline"
                   >
                     View Traces <Code className="w-3 h-3" />
                   </Link>
@@ -543,17 +543,17 @@ export default function WorkflowCanvasPage() {
           fitView
           colorMode="dark"
         >
-          <Background color="#333" gap={20} />
+          <Background color="#4a5a7c" gap={20} />
           <Controls className="!bg-surface !border-border !fill-white" />
           
           {nodes.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-              <div className="text-center space-y-4 max-w-sm px-6 py-10 border border-dashed border-white/5 rounded-3xl bg-white/[0.01]">
-                <Plus className="w-10 h-10 text-accent/20 mx-auto mb-2" />
-                <h3 className="text-sm font-bold uppercase tracking-widest text-muted/85">
+              <div className="text-center space-y-4 max-w-sm px-6 py-10 border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
+                <Plus className="w-10 h-10 text-accent mx-auto mb-2" />
+                <h3 className="text-sm font-bold uppercase tracking-widest text-muted">
                   Add your first agent to begin building your workflow
                 </h3>
-                <p className="text-xs text-muted/80 font-mono-data italic uppercase tracking-tighter">
+                <p className="text-xs text-muted font-mono-data italic uppercase tracking-tighter">
                   Connect agents to define execution flow
                 </p>
               </div>

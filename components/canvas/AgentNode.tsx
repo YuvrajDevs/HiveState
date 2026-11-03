@@ -18,7 +18,7 @@ export default function AgentNode({ data, selected }: any) {
       isSuccess ? "border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.1)]" :
       isFailed ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.1)]" :
       selected ? "ring-2 ring-accent/50 border-accent/50 shadow-[0_0_20px_rgba(59,130,246,0.15)]" : 
-      "border-white/5 shadow-xl"
+      "border-white/10 shadow-xl"
     }`}>
       {/* Input Handle */}
       <Handle type="target" position={Position.Top} className="!w-2 !h-2 !bg-accent !border-none" />
@@ -29,17 +29,17 @@ export default function AgentNode({ data, selected }: any) {
         isSuccess ? "bg-green-500/5 border-green-500/10" :
         isFailed ? "bg-red-500/5 border-red-500/10" :
         isRunning ? "bg-accent/5 border-accent/10" :
-        "bg-white/[0.03] border-white/5"
+        "bg-white/[0.03] border-white/10"
       }`}>
         <div className="flex items-center gap-2">
           <div className={`p-1 rounded-md transition-colors ${
-            isCircuitBreaker ? "bg-red-500 text-white animate-bounce-subtle" :
+            isCircuitBreaker ? "bg-red-500 text-[#0b1220] animate-bounce-subtle" :
             isSuccess ? "bg-green-500/20" :
             isFailed ? "bg-red-500/20" :
             isRunning ? "bg-accent/20" :
             "bg-accent/10"
           }`}>
-            {isCircuitBreaker ? <AlertTriangle className="w-3 h-3" /> : isRunning ? <Loader2 className="w-3 h-3 text-accent animate-spin" /> : <Cpu className={`w-3 h-3 ${isSuccess ? "text-green-500" : isFailed ? "text-red-500" : "text-accent"}`} />}
+            {isCircuitBreaker ? <AlertTriangle className="w-3 h-3" /> : isRunning ? <Loader2 className="w-3 h-3 text-accent animate-spin" /> : <Cpu className={`w-3 h-3 ${isSuccess ? "text-ok" : isFailed ? "text-bad" : "text-accent"}`} />}
           </div>
           <span className="text-xs font-bold uppercase tracking-wider truncate max-w-[120px] text-foreground/90">
             {data.label || "New Agent"}
@@ -47,12 +47,12 @@ export default function AgentNode({ data, selected }: any) {
         </div>
         
         <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded-full border text-[11px] font-bold uppercase tracking-widest transition-all ${
-          isCircuitBreaker ? "bg-red-500 text-white border-red-400 animate-pulse" :
-          isSuccess ? "bg-green-500/20 text-green-500 border-green-500/30" :
-          isFailed ? "bg-red-500/20 text-red-500 border-red-500/30" :
+          isCircuitBreaker ? "bg-red-500 text-[#0b1220] border-red-400 animate-pulse" :
+          isSuccess ? "bg-green-500/20 text-ok border-green-500/30" :
+          isFailed ? "bg-red-500/20 text-bad border-red-500/30" :
           isRunning ? "bg-accent/20 text-accent border-accent/30" :
           isPaused ? "bg-yellow-500/20 text-yellow-500 border-yellow-500/30" :
-          "bg-white/5 text-muted/80 border-white/5"
+          "bg-white/5 text-muted border-white/10"
         }`}>
           {isCircuitBreaker && <AlertTriangle className="w-2 h-2" />}
           {isSuccess && <CheckCircle2 className="w-2 h-2" />}
@@ -62,7 +62,7 @@ export default function AgentNode({ data, selected }: any) {
       </div>
 
       {/* Node Body */}
-      <div className="p-4 space-y-3 bg-[#0c0c0c]/50 relative">
+      <div className="p-4 space-y-3 bg-inset/70 relative">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 opacity-50 px-2 py-1 bg-white/5 rounded-md w-fit">
             <Terminal className="w-2.5 h-2.5" />
@@ -96,7 +96,7 @@ export default function AgentNode({ data, selected }: any) {
                   e.stopPropagation();
                   data.onInspect?.('output');
                 }}
-                className="p-1 hover:bg-green-500/20 rounded text-muted hover:text-green-500 transition-colors"
+                className="p-1 hover:bg-green-500/20 rounded text-muted hover:text-ok transition-colors"
                 title="View Output"
               >
                 <Eye className="w-3 h-3" />
@@ -105,7 +105,7 @@ export default function AgentNode({ data, selected }: any) {
           )}
         </div>
 
-        <p className="text-xs font-mono-data text-muted/85 italic line-clamp-3 leading-relaxed px-1 break-words">
+        <p className="text-xs font-mono-data text-muted italic line-clamp-3 leading-relaxed px-1 break-words">
           {data.systemPrompt || "No system protocol defined."}
         </p>
 
@@ -122,7 +122,7 @@ export default function AgentNode({ data, selected }: any) {
               Retry Step
             </button>
             <button 
-              className="w-full py-1.5 rounded-md bg-red-500/10 text-red-500 text-[11px] font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all border border-red-500/20"
+              className="w-full py-1.5 rounded-md bg-red-500/10 text-bad text-[11px] font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all border border-red-500/20"
               onClick={(e) => {
                 e.stopPropagation();
                 window.location.href = `/tasks/${data.runId}`;
@@ -138,7 +138,7 @@ export default function AgentNode({ data, selected }: any) {
               <div className="text-[11px] font-bold text-yellow-500/60 uppercase tracking-widest text-center mb-2">Manual Intervention Required</div>
               <div className="flex gap-2">
                 <button 
-                  className="flex-1 py-1.5 rounded-md bg-green-500/10 text-green-500 text-[11px] font-bold uppercase tracking-widest hover:bg-green-500/20 transition-all border border-green-500/20"
+                  className="flex-1 py-1.5 rounded-md bg-green-500/10 text-ok text-[11px] font-bold uppercase tracking-widest hover:bg-green-500/20 transition-all border border-green-500/20"
                   onClick={(e) => {
                     e.stopPropagation();
                     window.location.href = `/tasks/${data.runId}`;
@@ -147,7 +147,7 @@ export default function AgentNode({ data, selected }: any) {
                   Approve
                 </button>
                 <button 
-                  className="flex-1 py-1.5 rounded-md bg-red-500/10 text-red-500 text-[11px] font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all border border-red-500/20"
+                  className="flex-1 py-1.5 rounded-md bg-red-500/10 text-bad text-[11px] font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all border border-red-500/20"
                   onClick={(e) => {
                     e.stopPropagation();
                     window.location.href = `/tasks/${data.runId}`;

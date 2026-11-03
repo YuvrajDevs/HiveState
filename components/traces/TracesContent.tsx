@@ -62,16 +62,16 @@ export default function TracesContent({
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden gap-4">
       {/* Filter & Control Bar */}
-      <div className="flex items-center justify-between bg-white/[0.02] border border-white/5 p-3 rounded-xl">
+      <div className="flex items-center justify-between bg-white/[0.02] border border-white/10 p-3 rounded-xl">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-muted/80 uppercase tracking-widest px-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-muted uppercase tracking-widest px-2">
             <Filter className="w-3.5 h-3.5" />
             Deployment Search
           </div>
           <select 
             value={filterWorkflowId}
             onChange={(e) => setFilterWorkflowId(e.target.value)}
-            className="bg-black/40 border border-white/10 text-xs px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-accent/50 transition-all cursor-pointer uppercase font-bold tracking-wider"
+            className="bg-inset/85 border border-white/15 text-xs px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-accent/50 transition-all cursor-pointer uppercase font-bold tracking-wider"
           >
             <option value="all">ALL SESSSIONS</option>
             {workflows.map(w => (
@@ -80,7 +80,7 @@ export default function TracesContent({
           </select>
         </div>
         
-        <div className="flex items-center gap-2 px-4 text-[11px] font-mono-data text-muted/80 uppercase tracking-[0.2em]">
+        <div className="flex items-center gap-2 px-4 text-[11px] font-mono-data text-muted uppercase tracking-[0.2em]">
           <Activity className="w-3 h-3 text-accent" /> SessionBased_Telemetry_Active
         </div>
       </div>
@@ -93,7 +93,7 @@ export default function TracesContent({
               : index === 0; // Default expanded for the latest run only
             
             return (
-              <div key={run.runId} className="bg-surface border border-white/5 rounded-2xl overflow-hidden shadow-sm">
+              <div key={run.runId} className="bg-surface border border-white/10 rounded-2xl overflow-hidden shadow-sm">
                 {/* Run Header */}
                 <div 
                   className="p-4 bg-white/[0.03] flex items-center justify-between cursor-pointer hover:bg-white/[0.05] transition-colors group"
@@ -101,7 +101,7 @@ export default function TracesContent({
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg border flex items-center justify-center ${
-                      run.status === "success" ? "bg-green-500/10 border-green-500/20 text-green-500" : "bg-red-500/10 border-red-500/20 text-red-500"
+                      run.status === "success" ? "bg-green-500/10 border-green-500/20 text-ok" : "bg-red-500/10 border-red-500/20 text-bad"
                     }`}>
                       <Layers className="w-4 h-4" />
                     </div>
@@ -109,21 +109,21 @@ export default function TracesContent({
                       <div className="flex items-center gap-3">
                         <h3 className="text-sm font-bold uppercase tracking-tight text-foreground/80">{run.name}</h3>
                         <span className={`text-[11px] px-1.5 py-0.5 font-bold uppercase rounded-sm ${
-                          run.status === "success" ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
+                          run.status === "success" ? "bg-green-500/10 text-ok" : "bg-red-500/10 text-bad"
                         }`}>
                           {run.status}
                         </span>
                       </div>
-                      <p className="text-[11px] font-mono-data text-muted/80 uppercase tracking-widest mt-0.5">
+                      <p className="text-[11px] font-mono-data text-muted uppercase tracking-widest mt-0.5">
                         {format(new Date(run.timestamp), "MMM d, HH:mm:ss")} — {run.logs.length} Cycles Captured
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="text-xs font-mono-data text-muted/80 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-bold">
+                    <div className="text-xs font-mono-data text-muted opacity-0 group-hover:opacity-100 transition-opacity uppercase font-bold">
                       RUN: {run.runId.split("-")[0]}
                     </div>
-                    {isExpanded ? <ChevronDown className="w-4 h-4 text-muted/80" /> : <ChevronRight className="w-4 h-4 text-muted/80" />}
+                    {isExpanded ? <ChevronDown className="w-4 h-4 text-muted" /> : <ChevronRight className="w-4 h-4 text-muted" />}
                   </div>
                 </div>
 
@@ -132,7 +132,7 @@ export default function TracesContent({
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse font-mono-data text-[11px] table-fixed">
                       <thead>
-                        <tr className="border-t border-b border-white/5 bg-black/20 text-muted/80 uppercase tracking-[0.1em] h-10">
+                        <tr className="border-t border-b border-white/10 bg-inset/55 text-muted uppercase tracking-[0.1em] h-10">
                           <th className="px-6 w-[80px] font-bold">Status</th>
                           <th className="px-4 w-[120px] font-bold">Agent Node</th>
                           <th className="px-4 font-bold">Execution Payload Preview</th>
@@ -152,19 +152,19 @@ export default function TracesContent({
                             <td className="px-6">
                               <div className="flex items-center">
                                 {log.status === "success" ? (
-                                  <div className="flex items-center gap-2 text-green-500/60">
+                                  <div className="flex items-center gap-2 text-ok">
                                     <CheckCircle2 className="w-3.5 h-3.5" />
                                     <span className="text-[11px] font-bold uppercase">Success</span>
                                   </div>
                                 ) : (
-                                  <div className="flex items-center gap-2 text-red-500/60">
+                                  <div className="flex items-center gap-2 text-bad">
                                     <AlertTriangle className="w-3.5 h-3.5" />
                                     <span className="text-[11px] font-bold uppercase">Error</span>
                                   </div>
                                 )}
                               </div>
                             </td>
-                            <td className="px-4 truncate font-bold text-accent/80 uppercase tracking-tighter">
+                            <td className="px-4 truncate font-bold text-accent uppercase tracking-tighter">
                               {log.node_name || log.agent?.name || "System"}
                             </td>
                             <td className="px-4 relative overflow-hidden">
@@ -174,10 +174,10 @@ export default function TracesContent({
                                 </span>
                               </div>
                             </td>
-                            <td className="px-4 text-muted/80 tabular-nums text-xs">
+                            <td className="px-4 text-muted tabular-nums text-xs">
                               <div className="flex flex-col">
                                 <span className="font-bold" suppressHydrationWarning>{formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}</span>
-                                <span className="text-[11px] opacity-50 uppercase">{format(new Date(log.created_at), "MMM d, HH:mm:ss")}</span>
+                                <span className="text-[11px] opacity-80 uppercase">{format(new Date(log.created_at), "MMM d, HH:mm:ss")}</span>
                               </div>
                             </td>
                             <td className="px-6 text-right">
@@ -194,10 +194,10 @@ export default function TracesContent({
           })}
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl p-20 bg-white/[0.01]">
-          <Terminal className="w-12 h-12 text-muted/5 mb-6" />
-          <h3 className="text-[12px] font-bold text-muted/80 uppercase tracking-[0.3em]">No Sequences Detected</h3>
-          <p className="text-[11px] text-muted/85 tracking-[0.2em] mt-3 font-mono-data italic uppercase">
+        <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/15 rounded-3xl p-20 bg-white/[0.01]">
+          <Terminal className="w-12 h-12 text-muted mb-6" />
+          <h3 className="text-[12px] font-bold text-muted uppercase tracking-[0.3em]">No Sequences Detected</h3>
+          <p className="text-[11px] text-muted tracking-[0.2em] mt-3 font-mono-data italic uppercase">
             Cluster Registry Silent // Awaiting Initialization
           </p>
         </div>
