@@ -16,6 +16,11 @@ export async function POST(req: NextRequest) {
 
     console.log(`🚀 API: Manual trigger for workflow ${workflowId}`);
 
+    const { data: workflow } = await supabaseAdmin.from("workflows").select("id").eq("id", workflowId).maybeSingle();
+    if (!workflow) {
+      return NextResponse.json({ error: "Workflow not found" }, { status: 404 });
+    }
+
     // Refuse up front (with a clear message) instead of failing silently in the background
     await assertBudgetAvailable();
     

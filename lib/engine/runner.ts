@@ -216,17 +216,27 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
           nodeInput = JSON.stringify({ inputs });
         }
 
-        // Create a log entry for the HITL node to store the input payload
-        await supabaseAdmin
+        // Create (or refresh) the log entry for the HITL node to store the input payload.
+        // Not an upsert: there is no unique constraint on (run_id, node_id), because a node can
+        // legitimately have several logs (a failed attempt, then a success, or an idempotent reuse).
+        const hitlLog = {
+          run_id: currentRunId!,
+          node_id: hitlNode.id,
+          node_name: hitlNode.data?.label || "Manual Review",
+          input: nodeInput,
+          status: "paused_hitl",
+        };
+        const { data: pendingLog } = await supabaseAdmin
           .from("logs")
-          .upsert({
-            run_id: currentRunId!,
-            node_id: hitlNode.id,
-            node_name: hitlNode.data?.label || "Manual Review",
-            input: nodeInput,
-            status: "paused_hitl",
-            created_at: new Date().toISOString()
-          }, { onConflict: 'run_id,node_id' });
+          .select("id")
+          .eq("run_id", currentRunId!)
+          .eq("node_id", hitlNode.id)
+          .eq("status", "paused_hitl")
+          .maybeSingle();
+        const { error: hitlLogErr } = pendingLog
+          ? await supabaseAdmin.from("logs").update(hitlLog).eq("id", pendingLog.id)
+          : await supabaseAdmin.from("logs").insert(hitlLog);
+        if (hitlLogErr) throw new Error(`Could not record the review step: ${hitlLogErr.message}`);
 
         await supabaseAdmin
           .from("runs")

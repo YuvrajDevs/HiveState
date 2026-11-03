@@ -15,7 +15,9 @@ export async function POST(req: NextRequest) {
     let text = "";
 
     if (file.name.endsWith(".pdf")) {
-      const pdf = require("pdf-parse");
+      // Import the inner module: the package root runs a debug routine that reads a test file when bundled.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const pdf = require("pdf-parse/lib/pdf-parse.js");
       const data = await pdf(buffer);
       text = data.text;
     } else if (file.name.endsWith(".md") || file.name.endsWith(".txt")) {
