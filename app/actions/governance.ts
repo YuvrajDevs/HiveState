@@ -7,9 +7,11 @@ export async function getGovernanceSettings() {
     const { data, error } = await supabaseAdmin
       .from("governance_settings")
       .select("*")
-      .single();
-    
-    if (error && error.code !== 'PGRST116') throw error;
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
     
     return { success: true, settings: data };
   } catch (error: any) {
@@ -20,11 +22,19 @@ export async function getGovernanceSettings() {
 
 export async function updateGovernanceSettings(settings: any) {
   try {
-    const { data, error } = await supabaseAdmin
+    // Keep exactly one settings row: update it by id instead of inserting a new row on every save
+    const { data: existing } = await supabaseAdmin
       .from("governance_settings")
-      .upsert({ ...settings, updated_at: new Date().toISOString() })
-      .select()
-      .single();
+      .select("id")
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const payload = { ...(settings ?? {}), updated_at: new Date().toISOString() };
+    delete payload.id;
+    const { data, error } = existing
+      ? await supabaseAdmin.from("governance_settings").update(payload).eq("id", existing.id).select().single()
+      : await supabaseAdmin.from("governance_settings").insert(payload).select().single();
     
     if (error) throw error;
     

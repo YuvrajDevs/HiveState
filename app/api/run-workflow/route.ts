@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runWorkflow } from "@/lib/engine/runner";
+import { runWorkflow, assertBudgetAvailable, BudgetExceededError } from "@/lib/engine/runner";
 import { supabaseAdmin } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
@@ -15,6 +15,9 @@ export async function POST(req: NextRequest) {
     }
 
     console.log(`🚀 API: Manual trigger for workflow ${workflowId}`);
+
+    // Refuse up front (with a clear message) instead of failing silently in the background
+    await assertBudgetAvailable();
     
     // 1. Create the Run entry first to get an ID
     const { data: newRun, error: runErr } = await supabaseAdmin
@@ -31,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Start the engine in the background (don't await)
     // We pass the existing runId to the runner
-    runWorkflow(workflowId, input, newRun.id).catch(err => {
+    runWorkflow(workflowId, input, newRun.id, { fresh: true }).catch(err => {
       console.error(`❌ Background Execution Error for ${newRun.id}:`, err.message);
     });
 
@@ -39,7 +42,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ runId: newRun.id, status: "started" });
   } catch (error: any) {
     console.error("❌ API Error:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const status = error instanceof BudgetExceededError ? 402 : 500;
+    return NextResponse.json({ error: error.message }, { status });
   }
 }
 

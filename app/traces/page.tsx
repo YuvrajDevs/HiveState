@@ -56,7 +56,7 @@ export default async function TracesPage() {
             Ordered by reverse chronological sequence.
           </p>
         </div>
-        <div className="hidden md:flex text-[10px] font-mono-data bg-white/5 border border-border px-3 py-1 items-center gap-2 uppercase tracking-widest">
+        <div className="hidden md:flex text-xs font-mono-data bg-white/5 border border-border px-3 py-1 items-center gap-2 uppercase tracking-widest">
           <Terminal className="w-3 h-3 text-accent" />
           Live Instance: hive-trace-v1.0
         </div>
@@ -65,7 +65,7 @@ export default async function TracesPage() {
       <TracesContent initialLogs={logs || []} workflows={workflows || []} />
 
       {/* Footer Meta */}
-      <div className="flex items-center justify-between text-[10px] font-mono-data text-muted border-t border-border pt-4">
+      <div className="flex items-center justify-between text-xs font-mono-data text-muted border-t border-border pt-4">
         <div className="flex gap-4">
           <span>Captured_Logs: {logs?.length || 0}</span>
           <span>Status: SYNC_ESTABLISHED</span>

@@ -129,7 +129,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                <AlertOctagon className="w-5 h-5" />}
             </div>
             <div>
-              <div className="text-[10px] text-muted/30 uppercase font-bold tracking-widest mb-0.5">Execution Status</div>
+              <div className="text-xs text-muted/80 uppercase font-bold tracking-widest mb-0.5">Execution Status</div>
               <h1 className="text-sm font-bold uppercase tracking-tight flex items-center gap-2">
                 {run.status === "running" ? "Runner Active" : 
                  run.status === "resumed" ? "System Resuming" :
@@ -142,13 +142,13 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
           </div>
           <div className="text-right flex items-center gap-4">
             <div>
-              <div className="text-[10px] text-muted/30 uppercase font-bold tracking-widest mb-0.5">Progress</div>
+              <div className="text-xs text-muted/80 uppercase font-bold tracking-widest mb-0.5">Progress</div>
               <div className="text-sm font-mono-data font-bold text-foreground/70">{progressPercent}%</div>
             </div>
             
             <Link 
               href={`/workflows/${run.workflow_id}?runId=${run.id}`}
-              className="px-4 py-2 bg-accent/10 hover:bg-accent/20 border border-accent/20 rounded-xl text-[10px] font-bold uppercase tracking-wider text-accent transition-all flex items-center gap-2"
+              className="px-4 py-2 bg-accent/10 hover:bg-accent/20 border border-accent/20 rounded-xl text-xs font-bold uppercase tracking-wider text-accent transition-all flex items-center gap-2"
             >
               <Activity className="w-3.5 h-3.5" />
               View Canvas
@@ -158,25 +158,25 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
 
         {/* Compute Metrics */}
         <div className="modern-card p-4 bg-white/[0.02] border border-white/5">
-          <div className="text-[9px] text-muted/30 uppercase font-bold tracking-widest mb-2 flex items-center gap-2">
+          <div className="text-[11px] text-muted/80 uppercase font-bold tracking-widest mb-2 flex items-center gap-2">
             <Database className="w-3 h-3" /> Compute
           </div>
           <div className="flex items-end justify-between">
             <div className="text-lg font-mono-data font-bold text-accent">₹{(run.total_cost || 0).toFixed(6)}</div>
-            <div className="text-[10px] font-mono-data text-muted/40 mb-1">{run.total_tokens || 0} Toks</div>
+            <div className="text-xs font-mono-data text-muted/80 mb-1">{run.total_tokens || 0} Toks</div>
           </div>
         </div>
 
         {/* Time Metrics */}
         <div className="modern-card p-4 bg-white/[0.02] border border-white/5">
-          <div className="text-[9px] text-muted/30 uppercase font-bold tracking-widest mb-2 flex items-center gap-2">
+          <div className="text-[11px] text-muted/80 uppercase font-bold tracking-widest mb-2 flex items-center gap-2">
             <Clock className="w-3 h-3" /> Runtime
           </div>
           <div className="flex items-end justify-between">
             <div className="text-lg font-mono-data font-bold text-foreground/80">
               {run.total_duration_ms ? `${(run.total_duration_ms / 1000).toFixed(1)}s` : "---"}
             </div>
-            <div className="text-[10px] font-mono-data text-muted/40 mb-1 flex items-center gap-1">
+            <div className="text-xs font-mono-data text-muted/80 mb-1 flex items-center gap-1">
                {totalSteps} Steps
             </div>
           </div>
@@ -204,7 +204,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                     : run.status === "paused_error" ? "Execution Halted: Error Detected" : "Human Approval Required"}
                 </h2>
 
-                <p className="text-xs text-muted/60 font-medium leading-relaxed">
+                <p className="text-xs text-muted/85 font-medium leading-relaxed">
                   {run.pause_reason === "circuit_breaker"
                     ? `System halted after ${run.consecutive_failures_count} consecutive failures to prevent unstable execution. Review the failure logs below.`
                     : run.pause_reason === "budget_limit"
@@ -228,7 +228,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                     setIsSubmitting(false);
                   }}
                   disabled={isSubmitting}
-                  className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-red-500/20 transition-all flex items-center gap-2"
+                  className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-red-500/20 transition-all flex items-center gap-2"
                 >
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
                   {run.circuit_breaker_triggered ? "Reset & Retry" : "Debug & Resume"}
@@ -244,7 +244,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                       setIsSubmitting(false);
                     }}
                     disabled={isSubmitting}
-                    className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-green-500/20 transition-all flex items-center gap-2"
+                    className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-green-500/20 transition-all flex items-center gap-2"
                   >
                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                     Approve & Resume
@@ -261,7 +261,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                       setIsPolling(false);
                     }}
                     disabled={isSubmitting}
-                    className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-foreground/80 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all"
+                    className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-foreground/80 rounded-xl font-bold uppercase tracking-widest text-xs transition-all"
                   >
                     Reject Sequence
                   </button>
@@ -273,7 +273,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
 
           {/* Correction / Edit Area */}
           <div className="mt-6 p-4 bg-black/40 rounded-xl border border-white/5 space-y-4">
-             <div className="flex items-center gap-2 text-[9px] font-bold text-muted/30 uppercase tracking-widest">
+             <div className="flex items-center gap-2 text-[11px] font-bold text-muted/80 uppercase tracking-widest">
                 <Code2 className="w-3.5 h-3.5" /> 
                 {run.status === "paused_error" ? "Node Input Overlay (Editable)" : "Correction / Metadata Note"}
              </div>
@@ -312,10 +312,10 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
         {/* 1. Left Panel: Vertical Timeline */}
         <div className="w-80 flex-shrink-0 bg-surface border border-white/5 rounded-2xl overflow-y-auto no-scrollbar relative flex flex-col">
           <div className="sticky top-0 bg-surface/80 backdrop-blur-xl z-20 p-4 border-b border-white/5 flex items-center justify-between">
-            <h2 className="text-[10px] font-bold text-muted/40 uppercase tracking-[0.2em] flex items-center gap-2">
+            <h2 className="text-xs font-bold text-muted/80 uppercase tracking-[0.2em] flex items-center gap-2">
               <Layers className="w-3.5 h-3.5" /> Sequence Timeline
             </h2>
-            <div className="text-[9px] font-mono-data text-muted/30">
+            <div className="text-[11px] font-mono-data text-muted/80">
               {logs.length} Nodes
             </div>
           </div>
@@ -325,7 +325,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
               {logs.length === 0 ? (
                 <div className="py-20 text-center flex flex-col items-center justify-center gap-4 opacity-20">
                   <Loader2 className="w-6 h-6 animate-spin text-accent" />
-                  <p className="text-[10px] uppercase font-bold tracking-widest">Waiting for Engine...</p>
+                  <p className="text-xs uppercase font-bold tracking-widest">Waiting for Engine...</p>
                 </div>
               ) : (
                 logs.map((log, index) => {
@@ -359,14 +359,14 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                           : 'bg-white/[0.01] border-white/5 hover:bg-white/[0.03]'}
                       `}>
                         <div className="flex items-center justify-between gap-2 overflow-hidden mb-2">
-                          <span className={`text-[10px] font-bold uppercase tracking-tight truncate flex-1 ${isSelected ? 'text-foreground' : 'text-muted/60'}`}>
+                          <span className={`text-xs font-bold uppercase tracking-tight truncate flex-1 ${isSelected ? 'text-foreground' : 'text-muted/85'}`}>
                             {log.node_name || log.agent?.name || "Autonomous Agent"}
                           </span>
-                          <span className="text-[8px] font-mono-data text-muted/20 shrink-0">STEP_{index + 1}</span>
+                          <span className="text-[11px] font-mono-data text-muted/80 shrink-0">STEP_{index + 1}</span>
                         </div>
                         
-                        <div className="flex items-center gap-3 text-[9px] font-mono-data opacity-60">
-                          <div className={`flex items-center gap-1 ${isSelected ? 'text-foreground/60' : 'text-muted/40'}`}>
+                        <div className="flex items-center gap-3 text-[11px] font-mono-data opacity-60">
+                          <div className={`flex items-center gap-1 ${isSelected ? 'text-foreground/60' : 'text-muted/80'}`}>
                             <Clock className="w-2.5 h-2.5 opacity-50" />
                             {log.duration_ms || 0}ms
                           </div>
@@ -401,7 +401,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                   </div>
                   <div>
                     <h2 className="text-sm font-bold tracking-tight uppercase tracking-wider">{selectedLog.node_name || selectedLog.agent?.name || "System Process"}</h2>
-                    <div className="text-[9px] text-muted/40 font-mono-data uppercase tracking-[0.2em] mt-0.5">
+                    <div className="text-[11px] text-muted/80 font-mono-data uppercase tracking-[0.2em] mt-0.5">
                       Execution Step ID: {selectedLog.id.split("-")[0]}
                     </div>
                   </div>
@@ -410,22 +410,22 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                   <div className="flex items-center gap-4 bg-white/[0.03] border border-white/5 rounded-xl px-3 py-1.5">
                     <div className="flex items-center gap-2 border-r border-white/10 pr-3">
                       <Database className="w-3 h-3 text-accent/60" />
-                      <div className="font-mono-data text-[10px]">
-                        <span className="text-muted/40 uppercase">Prompt:</span>
+                      <div className="font-mono-data text-xs">
+                        <span className="text-muted/80 uppercase">Prompt:</span>
                         <span className="ml-1 font-bold text-accent">{selectedLog.prompt_tokens || 0}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 border-r border-white/10 pr-3">
                       <Zap className="w-3 h-3 text-accent/60" />
-                      <div className="font-mono-data text-[10px]">
-                        <span className="text-muted/40 uppercase">Completion:</span>
+                      <div className="font-mono-data text-xs">
+                        <span className="text-muted/80 uppercase">Completion:</span>
                         <span className="ml-1 font-bold text-accent">{selectedLog.completion_tokens || 0}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Activity className="w-3 h-3 text-accent/60" />
-                      <div className="font-mono-data text-[10px]">
-                        <span className="text-muted/40 uppercase">Total:</span>
+                      <div className="font-mono-data text-xs">
+                        <span className="text-muted/80 uppercase">Total:</span>
                         <span className="ml-1 font-bold text-accent">{selectedLog.total_tokens || 0}</span>
                       </div>
                     </div>
@@ -438,12 +438,12 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                 {run.status === "completed" && lastSuccessfulLog && (
                   <div className="space-y-4 animate-in fade-in zoom-in-95 duration-500">
                     <div className="flex items-center justify-between border-b border-green-500/20 pb-2">
-                       <h3 className="text-[10px] font-bold text-green-500 uppercase tracking-widest flex items-center gap-2">
+                       <h3 className="text-xs font-bold text-green-500 uppercase tracking-widest flex items-center gap-2">
                         <Zap className="w-3.5 h-3.5 fill-current" /> Final System Output
                       </h3>
                       <button 
                         onClick={() => copyToClipboard(lastSuccessfulLog.output?.toString() || "")}
-                        className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-accent hover:text-white transition-all bg-accent/10 hover:bg-accent/30 border border-accent/20 px-3 py-1.5 rounded-lg"
+                        className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-accent hover:text-white transition-all bg-accent/10 hover:bg-accent/30 border border-accent/20 px-3 py-1.5 rounded-lg"
                       >
                         {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                         {copied ? "Copied" : "Copy Result"}
@@ -465,14 +465,14 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                   <div className="border border-red-500/20 bg-red-500/5 rounded-2xl p-6">
                     <div className="flex items-center gap-2 text-red-500 mb-4">
                       <AlertOctagon className="w-4 h-4" />
-                      <h3 className="text-[10px] font-bold uppercase tracking-widest">Critical Execution Failure</h3>
+                      <h3 className="text-xs font-bold uppercase tracking-widest">Critical Execution Failure</h3>
                     </div>
                     <div className="bg-black/40 rounded-xl p-4 border border-red-500/10">
                       <pre className="text-[11px] font-mono-data text-red-400 whitespace-pre-wrap leading-relaxed">
                         {selectedLog.error}
                       </pre>
                       {selectedLog.error_code && (
-                        <div className="mt-4 pt-4 border-t border-red-500/10 text-[9px] uppercase tracking-widest font-bold text-red-500/40">
+                        <div className="mt-4 pt-4 border-t border-red-500/10 text-[11px] uppercase tracking-widest font-bold text-red-500/40">
                           Error Code: {selectedLog.error_code}
                         </div>
                       )}
@@ -483,13 +483,13 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                 {/* Technical Inspector: Payload Breakdown */}
                 <div className="space-y-6">
                   <div className="flex items-center gap-2 pb-2 border-b border-white/5">
-                    <Terminal className="w-3.5 h-3.5 text-muted/30" />
-                    <h3 className="text-[10px] font-bold text-muted/60 uppercase tracking-widest">Payload Inspector</h3>
+                    <Terminal className="w-3.5 h-3.5 text-muted/80" />
+                    <h3 className="text-xs font-bold text-muted/85 uppercase tracking-widest">Payload Inspector</h3>
                   </div>
 
                   {/* Input */}
                   <div className="space-y-3">
-                    <label className="text-[9px] font-bold text-muted/20 uppercase tracking-widest px-1 flex items-center gap-2">
+                    <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1 flex items-center gap-2">
                        <ChevronRight className="w-3 h-3" /> Input Context
                     </label>
                     <div className="bg-black/60 border border-white/5 rounded-xl overflow-hidden">
@@ -502,7 +502,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                                 <div key={idx} className="p-4 space-y-2 hover:bg-white/[0.02] transition-colors">
                                   <div className="flex items-center gap-2">
                                     <Layers className="w-3 h-3 text-accent" />
-                                    <span className="text-[10px] font-bold text-accent uppercase tracking-widest">{inp.source_node}</span>
+                                    <span className="text-xs font-bold text-accent uppercase tracking-widest">{inp.source_node}</span>
                                   </div>
                                   <div className="text-[11px] font-mono-data text-foreground/70 whitespace-pre-wrap leading-relaxed">
                                     {inp.content}
@@ -527,7 +527,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                   {/* Output */}
                   {selectedLog.output && (
                     <div className="space-y-3">
-                      <label className="text-[9px] font-bold text-muted/20 uppercase tracking-widest px-1 flex items-center gap-2">
+                      <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1 flex items-center gap-2">
                         <ChevronRight className="w-3 h-3" /> Output Payload
                       </label>
                       <div className="bg-black/60 border border-white/5 rounded-xl p-4">
@@ -543,7 +543,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                    {/* System Instruction */}
                    {selectedLog.system_prompt && (
                     <div className="space-y-3">
-                      <label className="text-[9px] font-bold text-muted/20 uppercase tracking-widest px-1 flex items-center gap-2">
+                      <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1 flex items-center gap-2">
                         <ChevronRight className="w-3 h-3" /> System Strategy
                       </label>
                       <div className="bg-black/60 border border-white/5 rounded-xl p-4">
@@ -560,7 +560,7 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center py-20 opacity-20">
               <Terminal className="w-12 h-12 mb-4" />
-              <p className="text-[10px] font-mono-data uppercase tracking-[0.3em]">No execution slice selected</p>
+              <p className="text-xs font-mono-data uppercase tracking-[0.3em]">No execution slice selected</p>
             </div>
           )}
         </div>
@@ -584,16 +584,16 @@ export default function TaskDetailContent({ initialRun, initialLogs }: { initial
                   </div>
                   <div>
                     <h2 className="text-xl font-bold uppercase tracking-tight">Sequence Successfully Completed</h2>
-                    <p className="text-sm text-muted/40 font-medium">Global state finalized and persisted to vector engine.</p>
+                    <p className="text-sm text-muted/80 font-medium">Global state finalized and persisted to vector engine.</p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold text-muted/30 uppercase tracking-[0.2em]">Final Intelligence Payload</label>
+                    <label className="text-xs font-bold text-muted/80 uppercase tracking-[0.2em]">Final Intelligence Payload</label>
                     <button 
                       onClick={() => copyToClipboard(lastSuccessfulLog.output?.toString() || "")}
-                      className="text-[10px] font-bold text-accent uppercase tracking-widest flex items-center gap-2 hover:opacity-80 transition-opacity"
+                      className="text-xs font-bold text-accent uppercase tracking-widest flex items-center gap-2 hover:opacity-80 transition-opacity"
                     >
                       {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                       {copied ? "Result Copied" : "Copy to Clipboard"}

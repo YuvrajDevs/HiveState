@@ -287,13 +287,13 @@ export default function WorkflowCanvasPage() {
         <div className="flex items-center gap-3">
           <Link 
             href={executionRunId ? `/tasks/${executionRunId}` : "/"} 
-            className="p-1.5 hover:bg-white/5 rounded-md text-muted/50 hover:text-accent transition-all"
+            className="p-1.5 hover:bg-white/5 rounded-md text-muted/85 hover:text-accent transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div className="h-4 w-px bg-white/10 mx-1" />
           <div className="flex flex-col">
-            <span className="text-[9px] text-muted/40 font-mono-data tracking-[0.2em] uppercase">Workflow // Editor</span>
+            <span className="text-[11px] text-muted/80 font-mono-data tracking-[0.2em] uppercase">Workflow // Editor</span>
             <h1 className="text-xs font-bold uppercase tracking-tight text-foreground/90">{workflowName}</h1>
           </div>
         </div>
@@ -301,7 +301,7 @@ export default function WorkflowCanvasPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={addNode}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-[10px] font-bold uppercase tracking-wider transition-all text-muted hover:text-foreground"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-wider transition-all text-muted hover:text-foreground"
           >
             <Plus className="w-3 h-3 text-accent" />
             Add Agent
@@ -320,7 +320,7 @@ export default function WorkflowCanvasPage() {
               setNodes((nds) => nds.concat(newNode));
               setSelectedNodeId(newNode.id);
             }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-[10px] font-bold uppercase tracking-wider transition-all text-muted hover:text-foreground"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-wider transition-all text-muted hover:text-foreground"
           >
             <Pause className="w-3 h-3 text-yellow-500" />
             Add HITL
@@ -329,7 +329,7 @@ export default function WorkflowCanvasPage() {
           <button
             onClick={onSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-md bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 text-[10px] font-bold uppercase tracking-wider transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-1.5 rounded-md bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50"
           >
             {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
             Save Pipeline
@@ -337,7 +337,7 @@ export default function WorkflowCanvasPage() {
           <button 
             onClick={() => setShowRunModal(true)}
             disabled={isExecuting}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-md bg-green-600/10 border border-green-600/20 text-green-500 hover:bg-green-600/20 text-[10px] font-bold uppercase tracking-wider transition-all group"
+            className="flex items-center gap-2 px-4 py-1.5 rounded-md bg-green-600/10 border border-green-600/20 text-green-500 hover:bg-green-600/20 text-xs font-bold uppercase tracking-wider transition-all group"
           >
             {isExecuting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-current group-hover:scale-110 transition-transform" />}
             Execute
@@ -355,7 +355,7 @@ export default function WorkflowCanvasPage() {
                 runData?.status === "failed" || runData?.status === "paused_error" ? "bg-red-500" :
                 "bg-accent animate-pulse"
               }`} />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/80">
+              <span className="text-xs font-bold uppercase tracking-widest text-foreground/80">
                 {runData?.status === "running" ? "Executing Pipeline..." :
                  runData?.status === "completed" ? "Sequence Complete" :
                  runData?.status === "paused_hitl" ? "Waiting for Approval" :
@@ -367,20 +367,20 @@ export default function WorkflowCanvasPage() {
             <div className="h-4 w-px bg-white/5" />
 
             <div className="flex items-center gap-2 max-w-[300px] truncate">
-              <span className="text-[8px] text-muted/30 uppercase font-mono-data shrink-0">Input:</span>
-              <span className="text-[10px] text-muted/60 truncate italic">"{runData?.input_prompt || "..."}"</span>
+              <span className="text-[11px] text-muted/80 uppercase font-mono-data shrink-0">Input:</span>
+              <span className="text-xs text-muted/85 truncate italic">"{runData?.input_prompt || "..."}"</span>
             </div>
             
             <div className="h-4 w-px bg-white/5" />
             
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
-                <span className="text-[8px] text-muted/40 uppercase font-mono-data">Compute:</span>
-                <span className="text-[10px] font-mono-data font-bold text-accent">₹{(runData?.total_cost || 0).toFixed(5)}</span>
+                <span className="text-[11px] text-muted/80 uppercase font-mono-data">Compute:</span>
+                <span className="text-xs font-mono-data font-bold text-accent">₹{(runData?.total_cost || 0).toFixed(5)}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[8px] text-muted/40 uppercase font-mono-data">Tokens:</span>
-                <span className="text-[10px] font-mono-data font-bold text-foreground/60">{runData?.total_tokens || 0}</span>
+                <span className="text-[11px] text-muted/80 uppercase font-mono-data">Tokens:</span>
+                <span className="text-xs font-mono-data font-bold text-foreground/60">{runData?.total_tokens || 0}</span>
               </div>
             </div>
           </div>
@@ -389,14 +389,14 @@ export default function WorkflowCanvasPage() {
              {runData?.status === "completed" && (
                 <Link 
                   href={`/tasks/${executionRunId}`}
-                  className="text-[9px] font-bold uppercase tracking-widest text-muted hover:text-accent transition-colors flex items-center gap-1.5"
+                  className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-accent transition-colors flex items-center gap-1.5"
                 >
                   View Details <ChevronRight className="w-3 h-3" />
                 </Link>
              )}
              <button 
                 onClick={() => setExecutionRunId(null)}
-                className="p-1 hover:bg-white/5 rounded text-muted/40 hover:text-foreground transition-colors"
+                className="p-1 hover:bg-white/5 rounded text-muted/80 hover:text-foreground transition-colors"
                 title="Exit Live View"
              >
                 <X className="w-3 h-3" />
@@ -415,7 +415,7 @@ export default function WorkflowCanvasPage() {
                 <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
                   <Play className="w-4 h-4 text-green-500 fill-current" />
                 </div>
-                <h2 className="text-sm font-bold uppercase tracking-widest">Execute Workspace</h2>
+                <h2 className="text-sm font-bold uppercase tracking-widest">Run this workflow</h2>
               </div>
               <button 
                 onClick={() => setShowRunModal(false)}
@@ -428,8 +428,8 @@ export default function WorkflowCanvasPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between px-1">
-                  <label className="text-[9px] font-bold text-muted/40 uppercase tracking-[0.2em]">Initial InputContext</label>
-                  <span className="text-[8px] font-mono-data text-accent opacity-40 uppercase italic">Pipeline_Ready</span>
+                  <label className="text-[11px] font-bold text-muted/80 uppercase tracking-[0.2em]">Initial InputContext</label>
+                  <span className="text-[11px] font-mono-data text-accent opacity-40 uppercase italic">Pipeline_Ready</span>
                 </div>
                 <textarea 
                   autoFocus
@@ -443,7 +443,7 @@ export default function WorkflowCanvasPage() {
               <button
                 onClick={handleExecute}
                 disabled={isExecuting || !runInput}
-                className="w-full bg-green-600 text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-green-500/20 transition-all disabled:opacity-30"
+                className="w-full bg-green-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-green-500/20 transition-all disabled:opacity-30"
               >
                 {isExecuting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
                 Confirm and Run
@@ -466,7 +466,7 @@ export default function WorkflowCanvasPage() {
                 <div>
                   <h3 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
                     Node {inspectingNode.type === 'input' ? 'Input' : 'Output'}
-                    <span className="text-[10px] text-muted/40 font-mono-data ml-2">[{nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data?.label || "Agent"}]</span>
+                    <span className="text-xs text-muted/80 font-mono-data ml-2">[{nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data?.label || "Agent"}]</span>
                   </h3>
                 </div>
               </div>
@@ -480,7 +480,7 @@ export default function WorkflowCanvasPage() {
             
             <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar font-mono-data">
               <div className="bg-black/60 border border-white/5 rounded-2xl p-6 relative group">
-                <div className="absolute top-4 right-4 text-[8px] font-bold text-muted/20 uppercase tracking-widest">{inspectingNode.type}</div>
+                <div className="absolute top-4 right-4 text-[11px] font-bold text-muted/80 uppercase tracking-widest">{inspectingNode.type}</div>
                 <pre className="text-[12px] leading-relaxed whitespace-pre-wrap text-foreground/80">
                   {inspectingNode.type === 'input' 
                     ? nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog?.input || "NO_INPUT_FOUND"
@@ -491,11 +491,11 @@ export default function WorkflowCanvasPage() {
               {inspectingNode.type === 'output' && nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog && (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <div className="text-[8px] text-muted/40 uppercase font-bold mb-1">Tokens Used</div>
+                    <div className="text-[11px] text-muted/80 uppercase font-bold mb-1">Tokens Used</div>
                     <div className="text-xs font-bold text-accent">{nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog.total_tokens}</div>
                   </div>
                   <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <div className="text-[8px] text-muted/40 uppercase font-bold mb-1">Step Cost</div>
+                    <div className="text-[11px] text-muted/80 uppercase font-bold mb-1">Step Cost</div>
                     <div className="text-xs font-bold text-green-500">₹{nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog.step_cost.toFixed(5)}</div>
                   </div>
                 </div>
@@ -505,18 +505,18 @@ export default function WorkflowCanvasPage() {
             <div className="p-6 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
               <button 
                 onClick={() => setInspectingNode(null)}
-                className="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest text-muted transition-all"
+                className="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold uppercase tracking-widest text-muted transition-all"
               >
                 Close
               </button>
               <div className="flex items-center gap-4">
-                <span className="text-[10px] font-mono-data text-muted/40 uppercase tracking-widest hidden md:inline">
+                <span className="text-xs font-mono-data text-muted/80 uppercase tracking-widest hidden md:inline">
                   Seq_ID: {executionRunId?.split("-")[0] || "N/A"}
                 </span>
                 {executionRunId && (
                   <Link 
                     href={`/tasks/${executionRunId}`}
-                    className="flex items-center gap-2 px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[9px] font-bold uppercase tracking-widest text-muted/60 transition-all no-underline"
+                    className="flex items-center gap-2 px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-bold uppercase tracking-widest text-muted/85 transition-all no-underline"
                   >
                     View Traces <Code className="w-3 h-3" />
                   </Link>
@@ -550,17 +550,17 @@ export default function WorkflowCanvasPage() {
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
               <div className="text-center space-y-4 max-w-sm px-6 py-10 border border-dashed border-white/5 rounded-3xl bg-white/[0.01]">
                 <Plus className="w-10 h-10 text-accent/20 mx-auto mb-2" />
-                <h3 className="text-sm font-bold uppercase tracking-widest text-muted/60">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-muted/85">
                   Add your first agent to begin building your workflow
                 </h3>
-                <p className="text-[10px] text-muted/20 font-mono-data italic uppercase tracking-tighter">
+                <p className="text-xs text-muted/80 font-mono-data italic uppercase tracking-tighter">
                   Connect agents to define execution flow
                 </p>
               </div>
             </div>
           )}
 
-          <Panel position="bottom-right" className="bg-surface border border-border p-3 text-[9px] font-mono-data text-muted uppercase tracking-[0.2em] pointer-events-none">
+          <Panel position="bottom-right" className="bg-surface border border-border p-3 text-[11px] font-mono-data text-muted uppercase tracking-[0.2em] pointer-events-none">
             HiveState_V_0.1 // Node_Cluster_Synced
           </Panel>
         </ReactFlow>

@@ -33,7 +33,8 @@ export async function executeUnifiedModel(
     const { data: settings } = await supabaseAdmin
       .from("governance_settings")
       .select("*")
-      .single();
+      .limit(1)
+      .maybeSingle();
     
     if (settings) {
       primaryModel = primaryModel || settings.primary_model;

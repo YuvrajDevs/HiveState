@@ -21,7 +21,6 @@ import {
   FileJson
 } from "lucide-react";
 import Link from "next/link";
-import { supabaseAdmin } from "@/lib/supabase"; // Note: this might need a client-side wrapper if not safe, but I'll use a fetcher pattern or an action.
 
 // Since supabaseAdmin is server-side, I'll use a simple approach for now:
 // In a real app, I'd use a server action to fetch these.
@@ -29,7 +28,7 @@ import { supabaseAdmin } from "@/lib/supabase"; // Note: this might need a clien
 
 export default function RunPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-muted">Initializing Engine...</div>}>
+    <Suspense fallback={<div className="p-8 text-muted">Loading…</div>}>
       <RunContent />
     </Suspense>
   );
@@ -143,23 +142,27 @@ function RunContent() {
     }
   };
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); handleRun(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   const selectedWorkflow = workflows.find(w => w.id === selectedId);
 
   return (
     <div className="max-w-2xl mx-auto py-10 px-4 space-y-10">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/" className="p-2 hover:bg-white/5 rounded-md text-muted/50 hover:text-accent transition-all">
+          <Link href="/" className="p-2 hover:bg-white/5 rounded-md text-muted/85 hover:text-accent transition-all">
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight uppercase tracking-[0.1em]">Execution Hub</h1>
-            <p className="text-muted/50 text-xs mt-1">Select a workflow cluster and provide input context.</p>
+            <h1 className="text-2xl font-bold tracking-tight uppercase tracking-[0.1em]">Run a workflow</h1>
+            <p className="text-muted/85 text-xs mt-1">Pick a workflow, give it some input, and start. Tip: press Ctrl/⌘ + Enter to run.</p>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-[10px] font-mono-data text-green-500/70 uppercase tracking-widest">Engine Ready</span>
         </div>
       </header>
 
@@ -170,15 +173,9 @@ function RunContent() {
         </div>
 
         <div className="space-y-4 relative z-10">
-          <div className="bg-accent/5 border border-accent/10 p-3 rounded-lg mb-6 flex items-center gap-3">
-            <Activity className="w-4 h-4 text-accent" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-accent/80">
-              Select a workflow and provide input to execute
-            </span>
-          </div>
 
           <div className="space-y-2">
-            <label className="text-[9px] font-bold text-muted/40 uppercase tracking-[0.2em] px-1">Selected Workflow</label>
+            <label className="text-[11px] font-bold text-muted/80 uppercase tracking-[0.2em] px-1">Selected Workflow</label>
             <div className="grid grid-cols-1 gap-2">
               <select 
                 value={selectedId}
@@ -204,9 +201,9 @@ function RunContent() {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
-              <label className="text-[9px] font-bold text-muted/40 uppercase tracking-[0.2em]">Initial Input Context</label>
+              <label className="text-[11px] font-bold text-muted/80 uppercase tracking-[0.2em]">Initial Input Context</label>
               <div className="flex items-center gap-2">
-                <span className="text-[9px] text-muted/20 font-mono-data uppercase">Markdown Supported</span>
+                <span className="text-[11px] text-muted/80 font-mono-data uppercase">Markdown Supported</span>
               </div>
             </div>
 
@@ -229,8 +226,8 @@ function RunContent() {
                     )}
                   </div>
                   <div>
-                    <h4 className="text-[10px] font-bold text-foreground/80 uppercase tracking-wider mb-0.5">Attach Source Code or Data</h4>
-                    <p className="text-[9px] text-muted/30 uppercase tracking-widest font-mono-data">Supports PDF, Markdown, Plain Text</p>
+                    <h4 className="text-xs font-bold text-foreground/80 uppercase tracking-wider mb-0.5">Attach Source Code or Data</h4>
+                    <p className="text-[11px] text-muted/80 uppercase tracking-widest font-mono-data">Supports PDF, Markdown, Plain Text</p>
                   </div>
                 </div>
               </label>
@@ -241,8 +238,8 @@ function RunContent() {
                     <FileText className="w-4 h-4 text-accent" />
                   </div>
                   <div>
-                    <h4 className="text-[10px] font-bold text-accent uppercase tracking-wider line-clamp-1">{uploadedFile.name}</h4>
-                    <p className="text-[9px] text-accent/50 uppercase tracking-widest font-mono-data">{(uploadedFile.size / 1024).toFixed(1)} KB • Content Parsed</p>
+                    <h4 className="text-xs font-bold text-accent uppercase tracking-wider line-clamp-1">{uploadedFile.name}</h4>
+                    <p className="text-[11px] text-accent/50 uppercase tracking-widest font-mono-data">{(uploadedFile.size / 1024).toFixed(1)} KB • Content Parsed</p>
                   </div>
                 </div>
                 <button 
@@ -260,13 +257,13 @@ function RunContent() {
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isRunning || !selectedId || isUploading}
                 placeholder="Enter instructions or paste documentation here..."
-                className={`w-full h-40 bg-white/[0.03] border border-white/10 p-4 rounded-xl text-xs leading-relaxed focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all outline-none resize-none placeholder:text-muted/10 tracking-tight ${useFileAsInput ? 'opacity-50' : ''}`}
+                className={`w-full h-40 bg-white/[0.03] border border-white/10 p-4 rounded-xl text-xs leading-relaxed focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all outline-none resize-none placeholder:text-muted/85 tracking-tight ${useFileAsInput ? 'opacity-50' : ''}`}
               />
               {useFileAsInput && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[1px] rounded-xl pointer-events-none">
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-accent/20 border border-accent/40 rounded-full">
                     <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                    <span className="text-[8px] font-bold text-accent uppercase tracking-widest">Using Document Content</span>
+                    <span className="text-[11px] font-bold text-accent uppercase tracking-widest">Using Document Content</span>
                   </div>
                 </div>
               )}
@@ -274,7 +271,7 @@ function RunContent() {
             
             <div className="px-1 flex items-center gap-2">
               <Zap className="w-3 h-3 text-yellow-500/40" />
-              <span className="text-[8px] text-muted/30 uppercase font-mono-data tracking-[0.1em]">Input will be processed as the primary workflow context head.</span>
+              <span className="text-[11px] text-muted/80 uppercase font-mono-data tracking-[0.1em]">Input will be processed as the primary workflow context head.</span>
             </div>
           </div>
 
@@ -286,15 +283,20 @@ function RunContent() {
             {isRunning ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Initializing Run...
+                Starting…
               </>
             ) : (
               <>
                 <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />
-                Execute Cluster
+                Run workflow
               </>
             )}
           </button>
+          {!isRunning && (!selectedId || !input) && (
+            <p className="text-center text-xs text-muted" role="status">
+              {!selectedId ? "Choose a workflow to continue." : "Add some input (type, paste, or attach a file) to enable Run."}
+            </p>
+          )}
 
           {status !== "idle" && (
             <div className={`mt-6 p-4 rounded-xl border animate-in fade-in slide-in-from-top-2 duration-300 ${
@@ -318,7 +320,7 @@ function RunContent() {
                 {status === "completed" && (
                   <Link 
                     href="/traces"
-                    className="flex items-center gap-1.5 text-[10px] font-bold py-1.5 px-3 bg-green-500/10 hover:bg-green-500/20 rounded-lg transition-all"
+                    className="flex items-center gap-1.5 text-xs font-bold py-1.5 px-3 bg-green-500/10 hover:bg-green-500/20 rounded-lg transition-all"
                   >
                     View Traces <ExternalLink className="w-3 h-3" />
                   </Link>
@@ -326,7 +328,7 @@ function RunContent() {
               </div>
               
               {(error || status === "failed") && (
-                <p className="mt-2 text-[10px] opacity-70 font-mono-data">
+                <p className="mt-2 text-xs opacity-70 font-mono-data">
                   {error || "An unexpected error occurred during execution sequence."}
                 </p>
               )}
@@ -342,8 +344,8 @@ function RunContent() {
             <Cpu className="w-4 h-4 text-accent" />
           </div>
           <div>
-            <h4 className="text-[10px] font-bold text-foreground/80 uppercase tracking-wider mb-1">Compute Logic</h4>
-            <p className="text-[9px] text-muted/40 leading-relaxed">Runs on Gemini 1.5 Flash. Total latency is cumulative per-node processing time.</p>
+            <h4 className="text-xs font-bold text-foreground/80 uppercase tracking-wider mb-1">Compute Logic</h4>
+            <p className="text-[11px] text-muted/80 leading-relaxed">Each agent uses the Gemini model set on its node. Total time is the sum of every agent step.</p>
           </div>
         </div>
         <div className="modern-card p-4 border-none bg-white/[0.02] rounded-xl flex items-start gap-4">
@@ -351,8 +353,8 @@ function RunContent() {
             <BookOpen className="w-4 h-4 text-accent" />
           </div>
           <div>
-            <h4 className="text-[10px] font-bold text-foreground/80 uppercase tracking-wider mb-1">Persistent Logs</h4>
-            <p className="text-[9px] text-muted/40 leading-relaxed">Full execution traces are available immediately in the Traces directory after start.</p>
+            <h4 className="text-xs font-bold text-foreground/80 uppercase tracking-wider mb-1">Persistent Logs</h4>
+            <p className="text-[11px] text-muted/80 leading-relaxed">Full execution traces are available immediately in the Traces directory after start.</p>
           </div>
         </div>
       </footer>
