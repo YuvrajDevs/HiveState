@@ -7,7 +7,33 @@ import crypto from "crypto";
  * Executes a workflow using its interactive canvas structure.
  * Implements a dependency-aware parallel execution model.
  */
-export async function runWorkflow(workflowId: string, input: string, runId?: string) {
+export async function assertBudgetAvailable() {
+  const { data: settings } = await supabaseAdmin.from("governance_settings").select("*").limit(1).maybeSingle();
+  const { data: todaySpend } = await supabaseAdmin.rpc("get_today_spend");
+  const limit = settings?.daily_spend_limit || 0;
+  if (limit > 0 && (Number(todaySpend) || 0) >= limit) {
+    throw new BudgetExceededError(limit);
+  }
+}
+
+export class BudgetExceededError extends Error {
+  constructor(public limit: number) {
+    super(`Daily budget exceeded (limit: ₹${limit}). Raise the limit in Settings to continue.`);
+    this.name = "BudgetExceededError";
+  }
+}
+
+/** A run is "stopped" when the user hit Stop (the run row is marked failed). */
+async function isRunStopped(runId: string) {
+  const { data } = await supabaseAdmin.from("runs").select("status").eq("id", runId).maybeSingle();
+  return data?.status === "failed" || data?.status === "aborted";
+}
+
+/**
+ * @param opts.fresh  The caller already created the run row (and checked the budget).
+ *                    The engine still performs first-run setup such as context summarisation.
+ */
+export async function runWorkflow(workflowId: string, input: string, runId?: string, opts?: { fresh?: boolean }) {
   let currentRunId = runId;
   try {
     // 1. Fetch Workflow with its canvas_json
@@ -50,7 +76,7 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
     }
 
     // 4. Setup or Resume Run Context
-    const { data: settings } = await supabaseAdmin.from("governance_settings").select("*").single();
+    const { data: settings } = await supabaseAdmin.from("governance_settings").select("*").limit(1).maybeSingle();
     const useOptimization = settings?.context_optimization_enabled || false;
 
     // Execution State
@@ -60,28 +86,27 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
     let runTotalCost = 0;
     let runTotalDuration = 0;
 
-    if (!currentRunId) {
-      // Pre-run Budget Check
-      const { data: todaySpend } = await supabaseAdmin.rpc('get_today_spend');
-      const limit = settings?.daily_spend_limit || 0;
-      
-      if (limit > 0 && (Number(todaySpend) || 0) >= limit) {
-        throw new Error(`Daily budget exceeded (Limit: ₹${limit}). Increase your budget in settings to continue.`);
-      }
+    if (!currentRunId || opts?.fresh) {
+      if (!currentRunId) {
+        // Pre-run budget check (callers that pre-create the run do this themselves)
+        await assertBudgetAvailable();
 
-      const { data: newRun, error: runErr } = await supabaseAdmin
-        .from("runs")
-        .insert({
-          workflow_id: workflowId,
-          input_prompt: input,
-          status: "running",
-          is_optimized: useOptimization
-        })
-        .select()
-        .single();
-      
-      if (runErr || !newRun) throw new Error(`Run creation failed: ${runErr?.message}`);
-      currentRunId = newRun.id;
+        const { data: newRun, error: runErr } = await supabaseAdmin
+          .from("runs")
+          .insert({
+            workflow_id: workflowId,
+            input_prompt: input,
+            status: "running",
+            is_optimized: useOptimization
+          })
+          .select()
+          .single();
+
+        if (runErr || !newRun) throw new Error(`Run creation failed: ${runErr?.message}`);
+        currentRunId = newRun.id;
+      } else {
+        await supabaseAdmin.from("runs").update({ is_optimized: useOptimization }).eq("id", currentRunId);
+      }
 
       // Implementation Phase 1: Context Summarization Node
       if (useOptimization && input && input.length > 500) {
@@ -141,6 +166,12 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
 
     // 6. Execution Loop (Level-by-Level Parallelisms)
     while (completedNodeIds.size < nodes.length) {
+      // Honour "Stop task": bail out between levels instead of running on in the background
+      if (await isRunStopped(currentRunId!)) {
+        console.log("🛑 Engine: run was stopped by the user.");
+        return { runId: currentRunId, status: "stopped" };
+      }
+
       // Find nodes whose parents are all completed but they themselves are not
       const readyNodes = nodes.filter((node: any) => {
         if (completedNodeIds.has(node.id)) return false;
@@ -358,7 +389,10 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
       });
     }
 
-    // 7. Finalize Run
+    // 7. Finalize Run (never overwrite a run the user stopped mid-level)
+    if (await isRunStopped(currentRunId!)) {
+      return { runId: currentRunId, status: "stopped" };
+    }
     await supabaseAdmin
       .from("runs")
       .update({ 

@@ -99,9 +99,9 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
   if (visibleTasks.length === 0) {
     return (
       <div className="modern-card p-8 border-dashed border-white/5 bg-white/[0.01] rounded-2xl flex flex-col items-center justify-center text-center">
-        <Loader2 className="w-6 h-6 text-muted/10 mb-3 animate-spin" />
-        <h3 className="text-[10px] font-bold text-muted/30 uppercase tracking-[0.2em]">No active tasks</h3>
-        <p className="text-[8px] text-muted/10 mt-1 uppercase font-mono-data">System state: Idle</p>
+        <Loader2 className="w-6 h-6 text-muted/85 mb-3 animate-spin" />
+        <h3 className="text-xs font-bold text-muted/80 uppercase tracking-[0.2em]">No active tasks</h3>
+        <p className="text-[11px] text-muted/85 mt-1 uppercase font-mono-data">System state: Idle</p>
       </div>
     );
   }
@@ -110,7 +110,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
     <div className="space-y-4 relative">
       {/* Header with Navigation and Stop All */}
       <div className="flex items-center justify-between px-1">
-        <h2 className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] flex items-center gap-2">
+        <h2 className="text-xs font-bold text-accent uppercase tracking-[0.2em] flex items-center gap-2">
           <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 2 }}>
             <Activity className="w-3 h-3 text-accent" />
           </motion.div>
@@ -128,7 +128,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <span className="text-[8px] font-mono-data text-muted/40 px-2 uppercase">
+              <span className="text-[11px] font-mono-data text-muted/80 px-2 uppercase">
                 {page + 1} / {totalPages}
               </span>
               <button 
@@ -144,7 +144,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
           {/* Stop All Button */}
           <button
             onClick={handleStopAll}
-            className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 text-[8px] font-bold text-muted/40 uppercase tracking-widest rounded-lg transition-all"
+            className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-bold text-muted/80 uppercase tracking-widest rounded-lg transition-all"
           >
             Kill Active
           </button>
@@ -152,7 +152,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
           {/* Clear History Button */}
           <button
             onClick={handleClearHistory}
-            className="px-3 py-1 bg-accent/10 hover:bg-accent/20 border border-accent/20 text-[8px] font-bold text-accent uppercase tracking-widest rounded-lg transition-all"
+            className="px-3 py-1 bg-accent/10 hover:bg-accent/20 border border-accent/20 text-[11px] font-bold text-accent uppercase tracking-widest rounded-lg transition-all"
           >
             Clear Done
           </button>
@@ -194,7 +194,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
                 
                 <div className="flex flex-col h-full relative z-10 pointer-events-none">
                   <div className="flex items-center justify-between mb-3 shrink-0">
-                    <span className={`text-[9px] font-bold uppercase tracking-widest ${
+                    <span className={`text-[11px] font-bold uppercase tracking-widest ${
                       isBroken ? 'text-red-500 font-black' :
                       run.status === 'running' ? 'text-accent/80' : 
                       run.status === 'completed' ? 'text-green-500/60' :
@@ -242,7 +242,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
                           transition={{ duration: 0.5 }}
                         />
                       </div>
-                      <span className="text-[8px] font-mono-data text-muted/30 uppercase">
+                      <span className="text-[11px] font-mono-data text-muted/80 uppercase">
                         {progress}%
                       </span>
                     </div>
@@ -275,7 +275,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
               </div>
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-red-500 mb-1">Execution Failure</h4>
-                <p className="text-[10px] text-red-500/60 leading-relaxed font-medium">
+                <p className="text-xs text-red-500/60 leading-relaxed font-medium">
                   {errorNotification}
                 </p>
               </div>

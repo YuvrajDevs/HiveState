@@ -36,17 +36,17 @@ export default function HITLNode({ data, selected }: any) {
           }`}>
             <UserCheck className={`w-3 h-3 ${isSuccess ? "text-green-500" : isFailed ? "text-red-500" : "text-yellow-500"}`} />
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider truncate max-w-[120px] text-foreground/90">
+          <span className="text-xs font-bold uppercase tracking-wider truncate max-w-[120px] text-foreground/90">
             {data.label || "Human Review"}
           </span>
         </div>
         
-        <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded-full border text-[7px] font-bold uppercase tracking-widest transition-all ${
+        <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded-full border text-[11px] font-bold uppercase tracking-widest transition-all ${
           isSuccess ? "bg-green-500/20 text-green-500 border-green-500/30" :
           isFailed ? "bg-red-500/20 text-red-500 border-red-500/30" :
           isPaused ? "bg-yellow-500/20 text-yellow-500 border-yellow-500/30 animate-pulse" :
           isRunning ? "bg-accent/20 text-accent border-accent/30" :
-          "bg-white/5 text-muted/40 border-white/5"
+          "bg-white/5 text-muted/80 border-white/5"
         }`}>
           {isSuccess && <CheckCircle2 className="w-2 h-2" />}
           {isFailed && <XCircle className="w-2 h-2" />}
@@ -58,16 +58,16 @@ export default function HITLNode({ data, selected }: any) {
       <div className="p-4 space-y-3 bg-[#0c0c0c]/50 relative">
         <div className="flex items-center gap-2 text-yellow-500/60">
           <Pause className="w-3 h-3" />
-          <span className="text-[8px] font-bold uppercase tracking-[0.2em]">Manual Pause Point</span>
+          <span className="text-[11px] font-bold uppercase tracking-[0.2em]">Manual Pause Point</span>
         </div>
 
-        <p className="text-[10px] font-mono-data text-muted/60 italic line-clamp-3 leading-relaxed px-1 break-words">
+        <p className="text-xs font-mono-data text-muted/85 italic line-clamp-3 leading-relaxed px-1 break-words">
           {data.instructions || "Review previous node output before continuing."}
         </p>
 
         {(isPaused || isSuccess || isFailed) && (
           <button 
-            className="w-full py-1.5 rounded-md bg-yellow-500/10 text-yellow-500 text-[8px] font-bold uppercase tracking-widest hover:bg-yellow-500/20 transition-all border border-yellow-500/20 flex items-center justify-center gap-2"
+            className="w-full py-1.5 rounded-md bg-yellow-500/10 text-yellow-500 text-[11px] font-bold uppercase tracking-widest hover:bg-yellow-500/20 transition-all border border-yellow-500/20 flex items-center justify-center gap-2"
             onClick={(e) => {
               e.stopPropagation();
               if (data.runId) {

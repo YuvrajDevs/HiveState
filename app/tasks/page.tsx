@@ -41,27 +41,16 @@ export default async function TasksPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-2 uppercase tracking-tighter">Task History</h1>
           <p className="text-muted text-sm max-w-lg italic opacity-70">
-            Monitoring global workflow executions and agent cluster performance.
+            Every run across your workflows. Click a row to see its steps, cost and output.
           </p>
         </div>
-        <div className="hidden md:flex text-[10px] font-mono-data bg-white/5 border border-white/5 px-3 py-1 items-center gap-2 uppercase tracking-widest text-muted/50">
+        <div className="hidden md:flex text-xs font-mono-data bg-white/5 border border-white/5 px-3 py-1 items-center gap-2 uppercase tracking-widest text-muted/85">
           <Activity className="w-3 h-3 text-accent" />
-          Active_Sessions: {tasks?.filter(t => t.status === 'running').length || 0}
+          Running now: {tasks?.filter(t => t.status === 'running').length || 0}
         </div>
       </header>
 
       <TasksContent initialTasks={tasks || []} workflows={workflows || []} />
-
-      {/* Footer Meta */}
-      <div className="flex items-center justify-between text-[10px] font-mono-data text-muted/30 border-t border-white/5 pt-4">
-        <div className="flex gap-4">
-          <span>Total_Tasks_Captured: {tasks?.length || 0}</span>
-          <span>Status: CLUSTER_ONLINE</span>
-        </div>
-        <div className="text-accent underline cursor-not-allowed uppercase tracking-widest font-bold opacity-30">
-          Sync_Node_Beta
-        </div>
-      </div>
     </div>
   );
 }

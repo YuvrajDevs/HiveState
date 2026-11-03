@@ -20,7 +20,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
         </div>
         <button 
           onClick={onClose}
-          className="hover:text-accent transition-all p-1.5 rounded-md hover:bg-accent/10 text-muted/50"
+          className="hover:text-accent transition-all p-1.5 rounded-md hover:bg-accent/10 text-muted/85"
         >
           <X className="w-4 h-4" />
         </button>
@@ -29,7 +29,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
         {/* Node Label */}
         <div className="space-y-2">
-          <label className="text-[9px] text-muted/50 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
+          <label className="text-[11px] text-muted/85 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
             <Box className="w-3 h-3" />
             Node Identity
           </label>
@@ -37,7 +37,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
             type="text"
             value={selectedNode.data.label || ""}
             onChange={(e) => handleChange("label", e.target.value)}
-            className="w-full bg-white/[0.03] border border-white/10 p-2.5 rounded-lg text-xs focus:ring-1 focus:ring-accent/50 focus:border-accent/50 focus:outline-none transition-all placeholder:text-muted/20"
+            className="w-full bg-white/[0.03] border border-white/10 p-2.5 rounded-lg text-xs focus:ring-1 focus:ring-accent/50 focus:border-accent/50 focus:outline-none transition-all placeholder:text-muted/80"
             placeholder="e.g. Data_Analyst"
           />
         </div>
@@ -46,7 +46,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
           <>
             {/* Model Selection */}
             <div className="space-y-2">
-              <label className="text-[9px] text-muted/50 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
+              <label className="text-[11px] text-muted/85 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
                 <Settings2 className="w-3 h-3" />
                 Model Core
               </label>
@@ -54,7 +54,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
                 <select
                   value={selectedNode.data.model || "gemini-2.5-flash-lite"}
                   onChange={(e) => handleChange("model", e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/10 p-2.5 rounded-lg text-[10px] focus:ring-1 focus:ring-accent/50 focus:border-accent/50 focus:outline-none transition-all appearance-none cursor-pointer text-foreground/80 font-bold"
+                  className="w-full bg-white/[0.03] border border-white/10 p-2.5 rounded-lg text-xs focus:ring-1 focus:ring-accent/50 focus:border-accent/50 focus:outline-none transition-all appearance-none cursor-pointer text-foreground/80 font-bold"
                 >
                   <option value="gemini-2.5-flash">GEMINI-2.5-FLASH</option>
                   <option value="gemini-2.5-flash-lite">GEMINI-2.5-FLASH-LITE</option>
@@ -67,15 +67,15 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
 
             {/* System Prompt */}
             <div className="space-y-2">
-              <label className="text-[9px] text-muted/50 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
+              <label className="text-[11px] text-muted/85 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
                 <Code className="w-3 h-3" />
-                System Protocol
+                Agent settings
               </label>
               <textarea
                 value={selectedNode.data.systemPrompt || ""}
                 onChange={(e) => handleChange("systemPrompt", e.target.value)}
                 rows={10}
-                className="w-full bg-white/[0.03] border border-white/10 p-4 rounded-lg text-[10px] leading-relaxed focus:ring-1 focus:ring-accent/50 focus:border-accent/50 focus:outline-none transition-all resize-none font-mono text-foreground/70 placeholder:text-muted/20"
+                className="w-full bg-white/[0.03] border border-white/10 p-4 rounded-lg text-xs leading-relaxed focus:ring-1 focus:ring-accent/50 focus:border-accent/50 focus:outline-none transition-all resize-none font-mono text-foreground/70 placeholder:text-muted/80"
                 placeholder="DEFINE SYSTEM PROTOCOL..."
               />
             </div>
@@ -84,8 +84,8 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
             <div className="pt-4 border-t border-white/5">
               <label className="flex items-center justify-between cursor-pointer group">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/80 group-hover:text-accent transition-colors">Manual Review</span>
-                  <p className="text-[8px] text-muted/40 uppercase tracking-tighter">Pause before this agent executes</p>
+                  <span className="text-xs font-bold uppercase tracking-widest text-foreground/80 group-hover:text-accent transition-colors">Manual Review</span>
+                  <p className="text-[11px] text-muted/80 uppercase tracking-tighter">Pause before this agent executes</p>
                 </div>
                 <input 
                   type="checkbox" 
@@ -100,7 +100,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
           <>
             {/* HITL Instructions */}
             <div className="space-y-2">
-              <label className="text-[9px] text-muted/50 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
+              <label className="text-[11px] text-muted/85 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
                 <Code className="w-3 h-3" />
                 Review Instructions
               </label>
@@ -108,7 +108,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
                 value={selectedNode.data.instructions || ""}
                 onChange={(e) => handleChange("instructions", e.target.value)}
                 rows={5}
-                className="w-full bg-white/[0.03] border border-white/10 p-4 rounded-lg text-[10px] leading-relaxed focus:ring-1 focus:ring-accent/50 focus:border-accent/50 focus:outline-none transition-all resize-none font-mono text-foreground/70 placeholder:text-muted/20"
+                className="w-full bg-white/[0.03] border border-white/10 p-4 rounded-lg text-xs leading-relaxed focus:ring-1 focus:ring-accent/50 focus:border-accent/50 focus:outline-none transition-all resize-none font-mono text-foreground/70 placeholder:text-muted/80"
                 placeholder="Instructions for the human reviewer..."
               />
             </div>
@@ -117,7 +117,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
       </div>
 
 
-      <footer className="px-4 py-3 border-t border-white/5 bg-white/[0.02] italic text-[8px] text-muted/30 text-center tracking-[0.3em] font-mono-data">
+      <footer className="px-4 py-3 border-t border-white/5 bg-white/[0.02] italic text-[11px] text-muted/80 text-center tracking-[0.3em] font-mono-data">
         SYSTEM LAYER 3 // ENCRYPTED
       </footer>
     </aside>

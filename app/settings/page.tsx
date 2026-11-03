@@ -49,13 +49,13 @@ export default function SettingsPage() {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight uppercase tracking-wider">Infrastructure Control</h1>
-          <p className="text-muted/60 text-xs">
+          <p className="text-muted/85 text-xs">
             Manage autonomous agent clusters and AI provider credentials across your network. 
           </p>
         </div>
         <button 
           onClick={() => setShowAddForm(true)}
-          className="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg shadow-accent/10"
+          className="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg shadow-accent/10"
         >
           <Plus className="w-3.5 h-3.5" />
           Register Provider
@@ -67,7 +67,7 @@ export default function SettingsPage() {
 
       {/* Main Section: AI Providers */}
       <section className="space-y-6">
-        <div className="flex items-center gap-2 text-[10px] font-bold text-muted/30 uppercase tracking-[0.2em] px-1">
+        <div className="flex items-center gap-2 text-xs font-bold text-muted/80 uppercase tracking-[0.2em] px-1">
           <Settings2 className="w-3.5 h-3.5" />
           AI Providers & Clusters
         </div>
@@ -75,7 +75,7 @@ export default function SettingsPage() {
         {loading && providers.length === 0 ? (
           <div className="py-20 flex flex-col items-center justify-center gap-4 opacity-20 bg-white/[0.01] border border-dashed border-white/10 rounded-2xl">
             <Loader2 className="w-8 h-8 animate-spin text-accent" />
-            <p className="text-[10px] uppercase font-bold tracking-[0.3em]">Scanning Network...</p>
+            <p className="text-xs uppercase font-bold tracking-[0.3em]">Scanning Network...</p>
           </div>
         ) : providers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -90,15 +90,15 @@ export default function SettingsPage() {
         ) : (
           <div className="flex flex-col items-center justify-center py-20 bg-white/[0.01] border border-dashed border-white/10 rounded-3xl text-center px-6">
             <div className="w-16 h-16 bg-white/[0.02] rounded-full flex items-center justify-center mb-6">
-              <Box className="w-8 h-8 text-muted/10" />
+              <Box className="w-8 h-8 text-muted/85" />
             </div>
-            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-muted/40">No Providers Configured</h3>
-            <p className="text-[10px] text-muted/20 mt-2 max-w-xs uppercase leading-relaxed font-mono-data">
+            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-muted/80">No Providers Configured</h3>
+            <p className="text-xs text-muted/80 mt-2 max-w-xs uppercase leading-relaxed font-mono-data">
               Connect your first LLM cluster to enable autonomous sequence execution.
             </p>
             <button 
               onClick={() => setShowAddForm(true)}
-              className="mt-8 px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold text-muted/60 uppercase tracking-widest hover:bg-white/10 transition-all"
+              className="mt-8 px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-muted/85 uppercase tracking-widest hover:bg-white/10 transition-all"
             >
               Add First Provider
             </button>
@@ -113,19 +113,19 @@ export default function SettingsPage() {
         </div>
         
         <div className="relative z-10 space-y-4">
-          <div className="flex items-center gap-2 text-[10px] font-bold text-accent uppercase tracking-widest">
-            <Activity className="w-3.5 h-3.5" /> Security Protocol V2
+          <div className="flex items-center gap-2 text-xs font-bold text-accent uppercase tracking-widest">
+            <Activity className="w-3.5 h-3.5" /> Security
           </div>
           <p className="text-[11px] text-muted-foreground/80 leading-relaxed max-w-2xl font-medium">
             All API credentials are encrypted at rest and processed exclusively through isolated server-side environments. 
             HiveState never exposes full security keys to the browser, ensuring your cluster metrics remain confidential.
           </p>
           <div className="flex items-center gap-6 pt-2">
-            <div className="flex items-center gap-2 text-[9px] text-muted/40 font-bold uppercase tracking-tighter">
+            <div className="flex items-center gap-2 text-[11px] text-muted/80 font-bold uppercase tracking-tighter">
               <div className="w-1 h-1 rounded-full bg-green-500" />
               AES-256 Storage
             </div>
-            <div className="flex items-center gap-2 text-[9px] text-muted/40 font-bold uppercase tracking-tighter">
+            <div className="flex items-center gap-2 text-[11px] text-muted/80 font-bold uppercase tracking-tighter">
               <div className="w-1 h-1 rounded-full bg-green-500" />
               Zero-Exposure Client
             </div>
