@@ -16,9 +16,15 @@ export default async function TasksPage() {
       total_cost,
       total_tokens,
       total_duration_ms,
+      pause_reason,
+      error,
+      circuit_breaker_triggered,
+      consecutive_failures_count,
+      parent_run_id,
       workflow:workflows(id, name)
     `)
-    .order("started_at", { ascending: false });
+    .order("started_at", { ascending: false })
+    .limit(500);
 
   const { data: workflows } = await supabaseAdmin
     .from("workflows")
@@ -27,10 +33,10 @@ export default async function TasksPage() {
 
   if (error) {
     return (
-      <div className="p-12 text-center brutalist-border bg-red-500/5">
-        <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-red-500">Registry Sync Failed</h2>
-        <p className="text-muted text-sm mt-2 font-mono-data">{error.message}</p>
+      <div role="alert" className="rounded-md border border-red-500/30 bg-red-500/5 p-6">
+        <AlertTriangle className="mb-2 h-5 w-5 text-red-400" />
+        <h2 className="text-sm font-semibold text-red-200">Couldn&apos;t load run history</h2>
+        <p className="mt-1 font-mono-data text-xs text-red-200/80">{error.message}</p>
       </div>
     );
   }
@@ -39,14 +45,14 @@ export default async function TasksPage() {
     <div className="space-y-8 h-full flex flex-col">
       <header className="flex items-end justify-between border-b border-white/5 pb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2 uppercase tracking-tighter">Task History</h1>
-          <p className="text-muted text-sm max-w-lg italic opacity-70">
-            Every run across your workflows. Click a row to see its steps, cost and output.
+          <h1 className="text-2xl font-bold tracking-tight mb-1">Run history</h1>
+          <p className="text-neutral-400 text-sm max-w-lg">
+            Every run across your workflows, newest first (last 500). Filter, open a run to inspect its steps, or re-run it.
           </p>
         </div>
         <div className="hidden md:flex text-xs font-mono-data bg-white/5 border border-white/5 px-3 py-1 items-center gap-2 uppercase tracking-widest text-muted/85">
           <Activity className="w-3 h-3 text-accent" />
-          Running now: {tasks?.filter(t => t.status === 'running').length || 0}
+          Active now: {tasks?.filter(t => ['queued', 'running', 'resumed'].includes(t.status)).length || 0}
         </div>
       </header>
 

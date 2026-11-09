@@ -2,6 +2,7 @@
 
 import { supabaseAdmin } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
+import { invalidateProviderKeyCache } from "@/lib/models";
 
 export type AIProvider = {
   id: string;
@@ -85,6 +86,7 @@ export async function saveProvider(provider: Partial<AIProvider>) {
         .neq("id", data.id);
     }
 
+    invalidateProviderKeyCache();
     revalidatePath("/settings");
     return { success: true, provider: data };
   } catch (error: any) {
@@ -102,6 +104,7 @@ export async function deleteProvider(id: string) {
 
     if (error) throw error;
 
+    invalidateProviderKeyCache();
     revalidatePath("/settings");
     return { success: true };
   } catch (error: any) {
@@ -125,6 +128,7 @@ export async function setDefaultProvider(id: string) {
 
     if (error) throw error;
 
+    invalidateProviderKeyCache();
     revalidatePath("/settings");
     return { success: true };
   } catch (error: any) {
@@ -142,6 +146,7 @@ export async function toggleProviderStatus(id: string, isActive: boolean) {
 
     if (error) throw error;
 
+    invalidateProviderKeyCache();
     revalidatePath("/settings");
     return { success: true };
   } catch (error: any) {

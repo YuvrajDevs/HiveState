@@ -14,8 +14,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HiveState | Multi-Agent Orchestration",
-  description: "The Invisible Engine for AI-powered coordinated agent networks.",
+  title: "HiveState · Multi-agent workflows",
+  description: "Build multi-agent LLM workflows on a canvas, run them with retries, human review and a budget guard, and inspect every step.",
 };
 
 export default function RootLayout({

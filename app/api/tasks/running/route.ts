@@ -9,14 +9,14 @@ export async function GET() {
     const { data: activeRuns, error: activeError } = await supabaseAdmin
       .from("runs")
       .select("id, workflow_id, status, started_at, total_cost")
-      .in("status", ["running", "paused_hitl", "paused_error"])
+      .in("status", ["queued", "running", "resumed", "paused_hitl", "paused_error"])
       .order("started_at", { ascending: false });
 
     // 2. Fetch recent finished tasks (up to 10 to fill space)
     const { data: finishedRuns, error: finishedError } = await supabaseAdmin
       .from("runs")
       .select("id, workflow_id, status, started_at, total_cost")
-      .in("status", ["completed", "failed"])
+      .in("status", ["completed", "failed", "stopped"])
       .order("started_at", { ascending: false })
       .limit(9);
 
@@ -42,17 +42,22 @@ export async function GET() {
     const runningRunIds = runs.map(r => r.id);
     
     // 3. Get log counts for progress
-    let logCounts: Record<string, number> = {};
+    const logCounts: Record<string, number> = {};
     if (runningRunIds.length > 0) {
       const { data: logs } = await supabaseAdmin
         .from("logs")
-        .select("run_id")
+        .select("run_id, node_id")
+        .eq("status", "success")
         .in("run_id", runningRunIds);
-      
-      logCounts = (logs || []).reduce((acc: any, log: any) => {
-        acc[log.run_id] = (acc[log.run_id] || 0) + 1;
-        return acc;
-      }, {});
+
+      // Progress = distinct steps finished (retries and reused results are not double counted)
+      const seen = new Set<string>();
+      for (const log of logs || []) {
+        const key = `${log.run_id}:${log.node_id}`;
+        if (seen.has(key) || String(log.node_id).startsWith("__")) continue;
+        seen.add(key);
+        logCounts[log.run_id] = (logCounts[log.run_id] || 0) + 1;
+      }
     }
 
     // 4. Get workflow node counts

@@ -1,577 +1,504 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { 
-  ReactFlow, 
-  Background, 
-  Controls, 
-  Panel, 
-  useNodesState, 
-  useEdgesState, 
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  MiniMap,
+  Panel,
+  useNodesState,
+  useEdgesState,
   addEdge,
-  Connection,
-  Edge,
-  Node,
+  type Connection,
+  type Edge,
+  type Node,
   MarkerType,
-  ConnectionMode
+  ConnectionMode,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { getWorkflow, updateWorkflowCanvas } from "@/app/actions/workflow";
+import {
+  Save, Plus, ArrowLeft, Loader2, Play, X, ChevronRight, Pause, Undo2, Redo2, Keyboard, History, Copy, Check, AlertTriangle,
+} from "lucide-react";
+import { getWorkflow, updateWorkflowCanvas, duplicateWorkflow, restoreWorkflowVersion } from "@/app/actions/workflow";
 import { resumeWorkflowAction } from "@/app/actions/resume";
-
 import AgentNode from "@/components/canvas/AgentNode";
 import HITLNode from "@/components/canvas/HITLNode";
 import CanvasSidebar from "@/components/canvas/CanvasSidebar";
+import { RunForm } from "@/components/run/RunForm";
+import { Modal } from "@/components/ui/Modal";
+import { ErrorState } from "@/components/ui/States";
+import { useCanvasHistory, snapshot } from "@/lib/canvas/useCanvasHistory";
+import { DEFAULT_MODEL } from "@/lib/models/catalog";
+import type { Canvas } from "@/lib/engine/types";
 
-import { Save, Plus, ArrowLeft, Loader2, Play, X, ChevronRight, Eye, Code, Pause } from "lucide-react";
-
-import Link from "next/link";
-
-const nodeTypes = {
-  AgentNode: AgentNode,
-  agentNode: AgentNode, // case-insensitive alias
-  agent: AgentNode,      // legacy alias
-  HITLNode: HITLNode,
-};
-
+const nodeTypes = { AgentNode, agentNode: AgentNode, agent: AgentNode, HITLNode };
 
 const defaultEdgeOptions = {
   type: "step",
-  animated: true,
   style: { stroke: "rgba(var(--accent-rgb), 0.5)", strokeWidth: 2 },
-  markerEnd: {
-    type: MarkerType.ArrowClosed,
-    color: "rgba(var(--accent-rgb), 0.5)",
-  },
+  markerEnd: { type: MarkerType.ArrowClosed, color: "rgba(var(--accent-rgb), 0.5)" },
 };
 
+const ACTIVE = ["queued", "running", "resumed"];
+const STATUS_LABEL: Record<string, string> = {
+  queued: "Queued", running: "Running", resumed: "Running", completed: "Completed", paused_hitl: "Waiting for review",
+  paused_error: "Paused on error", failed: "Failed", stopped: "Stopped",
+};
+
+function shortcuts(mod: string): Array<[string, string]> {
+  return [
+    [`${mod} Z`, "Undo"],
+    [`${mod} Shift Z / ${mod} Y`, "Redo"],
+    [`${mod} S`, "Save"],
+    [`${mod} D`, "Duplicate selected step"],
+    [`${mod} Enter`, "Run workflow"],
+    ["A", "Add agent"],
+    ["H", "Add review step"],
+    ["Delete / Backspace", "Delete selection"],
+    ["Esc", "Close panel or dialog"],
+    ["?", "Show this list"],
+  ];
+}
+
+function normalise(saved: Canvas | null): { nodes: Node[]; edges: Edge[] } {
+  const nodes = (saved?.nodes || []).map((node, index) => {
+    const isReview = node.type === "HITLNode" || node.type === "human";
+    const data = { ...node.data };
+    if (typeof data.is_hitl === "string") data.is_hitl = data.is_hitl === "true"; // legacy string flag
+    return { ...node, data, type: isReview ? "HITLNode" : "AgentNode", position: node.position || { x: 100, y: 100 + index * 150 } } as Node;
+  });
+  return { nodes, edges: (saved?.edges || []) as Edge[] };
+}
+
+function isTyping(target: EventTarget | null) {
+  const el = target as HTMLElement | null;
+  return !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable);
+}
+
+type VersionRow = { version: number; note: string | null; created_at: string; nodeCount: number };
+type RunView = { status: string; paused_node_id?: string | null; pause_reason?: string | null; total_cost?: number; total_tokens?: number };
+type StepView = { id: string; node_id: string; status: string; input?: string; output?: string; total_tokens?: number; step_cost?: number; model_used?: string; attempts?: number };
+
 export default function WorkflowCanvasPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [workflowName, setWorkflowName] = useState("");
-  
-  // Execution State
-  const initialRunId = searchParams.get("runId");
-  const [executionRunId, setExecutionRunId] = useState<string | null>(initialRunId);
-  const [runData, setRunData] = useState<any>(null);
-  const [executionLogs, setExecutionLogs] = useState<any[]>([]);
-  const [inspectingNode, setInspectingNode] = useState<{ nodeId: string, type: 'input' | 'output' } | null>(null);
+  const [version, setVersion] = useState<number | null>(null);
+  const [savedSnap, setSavedSnap] = useState("");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [showRun, setShowRun] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [versions, setVersions] = useState<VersionRow[] | null>(null);
+  const [showVersions, setShowVersions] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [mod, setMod] = useState("Ctrl");
 
-  // Memoize selected node
-  const selectedNode = useMemo(() => 
-    nodes.find((n) => n.id === selectedNodeId) || null, 
-    [nodes, selectedNodeId]
-  );
+  // Live run overlay
+  const [executionRunId, setExecutionRunId] = useState<string | null>(searchParams.get("runId"));
+  const [pollKey, setPollKey] = useState(0);
+  const [runData, setRunData] = useState<RunView | null>(null);
+  const [executionLogs, setExecutionLogs] = useState<StepView[]>([]);
+  const [inspecting, setInspecting] = useState<{ nodeId: string; type: "input" | "output" } | null>(null);
+
+  const applySnapshot = useCallback((n: Node[], e: Edge[]) => { setNodes(n); setEdges(e); }, [setNodes, setEdges]);
+  const history = useCanvasHistory(nodes, edges, applySnapshot, !isLoading);
+  const { reset: resetHistory } = history;
+  const dirty = !isLoading && snapshot(nodes, edges) !== savedSnap;
+  const selectedNode = useMemo(() => nodes.find((n) => n.id === selectedNodeId) || null, [nodes, selectedNodeId]);
 
   useEffect(() => {
-    async function loadWorkflow() {
-      if (!id || id === "null") return;
-      setIsLoading(true);
-      const { data, error } = await getWorkflow(id as string);
+    if (/Mac|iPhone|iPad/.test(navigator.platform)) setMod("⌘"); // eslint-disable-line react-hooks/set-state-in-effect
+  }, []);
 
-      if (data) {
+  useEffect(() => {
+    if (!id) return;
+    let alive = true;
+    (async () => {
+      const { data, error } = await getWorkflow(id);
+      if (!alive) return;
+      if (error || !data) {
+        setLoadError(error || "Workflow not found");
+      } else {
         setWorkflowName(data.name);
-        if (data.canvas_json) {
-          const { nodes: savedNodes, edges: savedEdges } = data.canvas_json;
-          
-          // Force legacy/default nodes to render with customized AgentNode styles
-          // And provide a default position if missing to prevent ReactFlow crash
-          const standardizedNodes = (savedNodes || []).map((node: any, index: number) => {
-            // Force legacy/default nodes to render with customized AgentNode styles
-            // We treat anything that isnt HITL as an AgentNode
-            const isHITL = node.type === "HITLNode" || node.type === "human";
-            return {
-              ...node,
-              type: isHITL ? "HITLNode" : "AgentNode",
-              position: node.position || { x: 100, y: 100 + (index * 150) }
-            };
-          });
-
-
-          setNodes(standardizedNodes);
-          setEdges(savedEdges || []);
-        }
-      } else if (error) {
-        console.error("Workflow fetch failed:", error);
+        setVersion(data.current_version ?? null);
+        const { nodes: n, edges: e } = normalise(data.canvas_json);
+        setNodes(n);
+        setEdges(e);
+        setSavedSnap(snapshot(n, e));
+        resetHistory(n, e);
       }
       setIsLoading(false);
-    }
-    loadWorkflow();
-  }, [id, setNodes, setEdges]);
+    })();
+    return () => { alive = false; };
+  }, [id, setNodes, setEdges, resetHistory]);
 
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+  // Warn before leaving with unsaved changes
+  useEffect(() => {
+    if (!dirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [dirty]);
+
+  const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+
+  const addNode = useCallback(
+    (kind: "agent" | "review") => {
+      const count = nodes.length;
+      const position = { x: 120 + (count % 4) * 40, y: 80 + count * 40 };
+      const node: Node =
+        kind === "agent"
+          ? { id: crypto.randomUUID(), type: "AgentNode", position, data: { label: `Agent ${count + 1}`, model: DEFAULT_MODEL, systemPrompt: "", retries: 2 } }
+          : { id: crypto.randomUUID(), type: "HITLNode", position, data: { label: "Review", instructions: "Check the output before the workflow continues." } };
+      setNodes((nds) => [...nds.map((n) => ({ ...n, selected: false })), { ...node, selected: true }]);
+      setSelectedNodeId(node.id);
+    },
+    [nodes.length, setNodes],
   );
 
-  const onNodeClick = useCallback((_: any, node: any) => {
-    setSelectedNodeId(node.id);
-  }, []);
+  const duplicateSelected = useCallback(() => {
+    const src = nodes.find((n) => n.id === selectedNodeId);
+    if (!src) return;
+    const copy: Node = { ...src, id: crypto.randomUUID(), selected: true, position: { x: src.position.x + 40, y: src.position.y + 40 }, data: { ...src.data, label: `${src.data.label || "Step"} copy` } };
+    setNodes((nds) => [...nds.map((n) => ({ ...n, selected: false })), copy]);
+    setSelectedNodeId(copy.id);
+  }, [nodes, selectedNodeId, setNodes]);
 
-  const onPaneClick = useCallback(() => {
-    setSelectedNodeId(null);
-  }, []);
+  const updateNodeData = useCallback(
+    (nodeId: string, patch: Record<string, unknown>) => setNodes((nds) => nds.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...patch } } : n))),
+    [setNodes],
+  );
 
-  const addNode = useCallback(() => {
-    const newNode: Node = {
-      id: crypto.randomUUID(),
-      type: "AgentNode",
-      position: { x: Math.random() * 400, y: Math.random() * 400 },
-      data: { 
-        label: `Agent_${nodes.length + 1}`,
-        model: "gemini-2.5-flash",
-        systemPrompt: "" 
-      },
+  const deleteNode = useCallback(
+    (nodeId: string) => {
+      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+      setSelectedNodeId(null);
+    },
+    [setNodes, setEdges],
+  );
+
+  const onSave = useCallback(async () => {
+    setSaveState("saving");
+    setSaveError(null);
+    const snap = snapshot(nodes, edges);
+    const res = await updateWorkflowCanvas(id, JSON.parse(snap));
+    if (res.error) {
+      setSaveState("error");
+      setSaveError(res.error);
+      return false;
+    }
+    setSavedSnap(snap);
+    if (res.version) setVersion(res.version);
+    setVersions(null);
+    setSaveState("saved");
+    setTimeout(() => setSaveState((s) => (s === "saved" ? "idle" : s)), 1500);
+    return true;
+  }, [id, nodes, edges]);
+
+  const openRun = useCallback(async () => {
+    if (nodes.length === 0) return;
+    if (dirty && !(await onSave())) return; // runs execute the saved canvas
+    setShowRun(true);
+  }, [dirty, onSave, nodes.length]);
+
+  const toggleVersions = useCallback(async () => {
+    setShowVersions((s) => !s);
+    if (versions) return;
+    const res = await fetch(`/api/workflows/${id}/versions`);
+    const data = await res.json().catch(() => ({}));
+    setVersions(res.ok ? data.versions : []);
+  }, [id, versions]);
+
+  const restore = async (v: number) => {
+    if (dirty && !confirm("You have unsaved changes. Restore anyway? They will be lost.")) return;
+    setBusy(`restore-${v}`);
+    const res = await restoreWorkflowVersion(id, v);
+    setBusy(null);
+    if (res.error || !res.canvas) return alert(`Could not restore: ${res.error}`);
+    const { nodes: n, edges: e } = normalise(res.canvas);
+    setNodes(n);
+    setEdges(e);
+    setSavedSnap(snapshot(n, e));
+    resetHistory(n, e);
+    setVersion(res.version ?? null);
+    setVersions(null);
+    setShowVersions(false);
+  };
+
+  const duplicate = async () => {
+    if (dirty && !(await onSave())) return;
+    setBusy("duplicate");
+    const res = await duplicateWorkflow(id);
+    setBusy(null);
+    if (res.data) router.push(`/workflows/${res.data.id}`);
+    else alert(`Could not duplicate: ${res.error}`);
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const isMod = e.metaKey || e.ctrlKey;
+      const key = e.key.toLowerCase();
+      if (isMod && key === "s") { e.preventDefault(); onSave(); return; }
+      if (isMod && key === "enter" && !showRun) { e.preventDefault(); openRun(); return; }
+      if (e.key === "Escape") { setShowVersions(false); if (!showRun && !showShortcuts && !inspecting) setSelectedNodeId(null); return; }
+      if (isTyping(e.target) || showRun || showShortcuts) return;
+      if (isMod && key === "z" && !e.shiftKey) { e.preventDefault(); history.undo(); }
+      else if (isMod && ((key === "z" && e.shiftKey) || key === "y")) { e.preventDefault(); history.redo(); }
+      else if (isMod && key === "d") { e.preventDefault(); duplicateSelected(); }
+      else if (!isMod && !e.altKey && key === "a") { e.preventDefault(); addNode("agent"); }
+      else if (!isMod && !e.altKey && key === "h") { e.preventDefault(); addNode("review"); }
+      else if (e.key === "?") { e.preventDefault(); setShowShortcuts(true); }
     };
-    setNodes((nds) => nds.concat(newNode));
-    setSelectedNodeId(newNode.id);
-  }, [nodes.length, setNodes]);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onSave, openRun, history, duplicateSelected, addNode, showRun, showShortcuts, inspecting]);
 
-  const updateNodeData = useCallback((nodeId: string, newData: any) => {
-    setNodes((nds) => 
-      nds.map((node) => {
-        if (node.id === nodeId) {
-          return { ...node, data: { ...node.data, ...newData } };
-        }
-        return node;
-      })
-    );
-  }, [setNodes]);
-
-  const onSave = async () => {
-    setIsSaving(true);
-    const canvasData = { nodes, edges };
-    
-    const { success, error } = await updateWorkflowCanvas(id as string, canvasData);
-
-    if (error) {
-      console.error("Save failed:", error);
-      alert("Pipeline compilation/save failed. System logged.");
-    } else if (success) {
-      // Show a temporary success indicator if needed
-    }
-    
-    setIsSaving(false);
-  };
-
-  const [isExecuting, setIsExecuting] = useState(false);
-  const [showRunModal, setShowRunModal] = useState(false);
-  const [runInput, setRunInput] = useState("");
-
-  const handleExecute = async () => {
-    if (!runInput) return;
-    setIsExecuting(true);
-    try {
-      const res = await fetch("/api/run-workflow", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ workflowId: id, input: runInput }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      
-      // Success - stay on canvas and start execution view
-      setExecutionRunId(data.runId);
-      setShowRunModal(false);
-      
-      // The polling useEffect will take over from here
-    } catch (err: any) {
-      alert("Execution failed: " + err.message);
-      setIsExecuting(false);
-    }
-  };
-  
-  const handleRetryNode = async (nodeId: string) => {
-    if (!executionRunId) return;
-    setIsExecuting(true);
-    try {
-      const res = await resumeWorkflowAction(executionRunId, nodeId);
-      if (res.error) throw new Error(res.error);
-      
-      // The polling logic will pick up the 'resumed/running' status
-    } catch (err: any) {
-      alert("Retry failed: " + err.message);
-      setIsExecuting(false);
-    }
-  };
-
-  // Polling for execution updates
+  // Poll the live run until it settles; streamed step output shows up as it is written.
   useEffect(() => {
     if (!executionRunId) return;
-
-    const interval = setInterval(async () => {
+    let alive = true;
+    let timer: ReturnType<typeof setTimeout>;
+    const tick = async () => {
       try {
-        const [runRes, logsRes] = await Promise.all([
-          fetch(`/api/tasks/${executionRunId}`),
-          fetch(`/api/tasks/${executionRunId}/logs`)
-        ]);
-
-        if (runRes.ok && logsRes.ok) {
-          const runUpdate = await runRes.json();
-          const logsUpdate = await logsRes.json();
-
-          setRunData(runUpdate.run);
-          setExecutionLogs(logsUpdate.logs);
-
-          // Stop polling if finished
-          if (["completed", "failed", "paused_error", "paused_hitl"].includes(runUpdate.run.status)) {
-            setIsExecuting(false);
-            if (runUpdate.run.status !== "paused_error" && runUpdate.run.status !== "paused_hitl") {
-              // We can keep the executionRunId to show results, but stop polling
-              clearInterval(interval);
-            } else {
-              // On pause/error we might want to keep polling in case user resumes elsewhere?
-              // Or just stop and wait for them to click Resume here.
-              clearInterval(interval);
-            }
-          }
+        const [runRes, logsRes] = await Promise.all([fetch(`/api/tasks/${executionRunId}`), fetch(`/api/tasks/${executionRunId}/logs`)]);
+        if (runRes.ok && logsRes.ok && alive) {
+          const run = (await runRes.json()).run as RunView;
+          setRunData(run);
+          setExecutionLogs((await logsRes.json()).logs || []);
+          if (!ACTIVE.includes(run.status)) return;
         }
-      } catch (err) {
-        console.error("Polling error:", err);
+      } catch {
+        /* transient network error: keep polling */
       }
-    }, 2000);
+      if (alive) timer = setTimeout(tick, 1200);
+    };
+    tick();
+    return () => { alive = false; clearTimeout(timer); };
+  }, [executionRunId, pollKey]);
 
-    return () => clearInterval(interval);
+  const retry = useCallback(async () => {
+    if (!executionRunId) return;
+    const res = await resumeWorkflowAction(executionRunId);
+    if (res.error) alert(`Retry failed: ${res.error}`);
+    else setPollKey((k) => k + 1);
   }, [executionRunId]);
 
-  // Merge execution data into nodes
+  const runActive = !!runData && ACTIVE.includes(runData.status);
+
   const nodesWithExecution = useMemo(() => {
-    return nodes.map((node: any) => {
-      const log = executionLogs.find(l => l.node_id === node.id);
-      const isPausedHere = runData?.paused_node_id === node.id;
-      
+    if (!executionRunId) return nodes;
+    return nodes.map((node) => {
+      const log = [...executionLogs].reverse().find((l) => l.node_id === node.id); // latest attempt wins
+      const pausedHere = runData?.paused_node_id === node.id && String(runData?.status).startsWith("paused");
       return {
         ...node,
         data: {
           ...node.data,
-          status: isPausedHere ? (runData?.status || "paused") : (log?.status || (executionRunId && (runData?.status === "running" || runData?.status === "resumed") ? "idle" : node.data.status)),
-          pause_reason: isPausedHere ? runData?.pause_reason : log?.pause_reason,
+          status: pausedHere ? runData?.status : log?.status || (runActive ? "idle" : undefined),
+          pause_reason: pausedHere ? runData?.pause_reason : undefined,
           executionLog: log,
-          isInspecting: inspectingNode?.nodeId === node.id,
-          onInspect: (type: 'input' | 'output') => setInspectingNode({ nodeId: node.id, type }),
-          onRetry: () => handleRetryNode(node.id),
-          runId: executionRunId
-        }
+          onInspect: (type: "input" | "output") => setInspecting({ nodeId: node.id, type }),
+          onRetry: retry,
+          runId: executionRunId,
+        },
       };
     });
-  }, [nodes, executionLogs, executionRunId, runData, inspectingNode]);
+  }, [nodes, executionLogs, executionRunId, runData, runActive, retry]);
 
-  // Animate edges if executing
-  const edgesWithExecution = useMemo(() => {
-    return edges.map(edge => ({
-      ...edge,
-      animated: !!(executionRunId && (runData?.status === "running" || runData?.status === "resumed") && runData?.pause_reason !== "circuit_breaker")
-    }));
-  }, [edges, executionRunId, runData?.status]);
+  const edgesWithExecution = useMemo(() => edges.map((e) => ({ ...e, animated: runActive })), [edges, runActive]);
+  const inspectedLog = inspecting ? executionLogs.filter((l) => l.node_id === inspecting.nodeId).at(-1) : null;
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full gap-3 font-mono-data uppercase tracking-widest text-muted">
-        <Loader2 className="w-6 h-6 animate-spin text-accent" />
-        Initializing_Canvas...
+      <div className="flex h-full items-center justify-center gap-3 text-sm text-neutral-400" aria-busy="true">
+        <Loader2 className="h-5 w-5 animate-spin text-accent" /> Loading workflow…
+      </div>
+    );
+  }
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-lg py-10">
+        <ErrorState title="Couldn't open this workflow" message={loadError} />
+        <Link href="/workflows" className="mt-4 inline-block text-sm text-accent underline">Back to workflows</Link>
       </div>
     );
   }
 
+  const btn = "flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-neutral-300 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-accent/60 disabled:opacity-40";
+
   return (
     <div className="absolute inset-0 flex flex-col bg-[#080808]">
-      {/* Top Bar */}
-      <header className="h-14 glass-panel border-b border-white/5 flex items-center justify-between px-4 z-10">
-        <div className="flex items-center gap-3">
-          <Link 
-            href={executionRunId ? `/tasks/${executionRunId}` : "/"} 
-            className="p-1.5 hover:bg-white/5 rounded-md text-muted/85 hover:text-accent transition-all"
-          >
-            <ArrowLeft className="w-4 h-4" />
+      <header className="glass-panel z-10 flex flex-wrap items-center justify-between gap-2 border-b border-white/5 px-3 py-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <Link href={executionRunId ? `/tasks/${executionRunId}` : "/workflows"} aria-label="Back" className="rounded-md p-1.5 text-neutral-400 hover:bg-white/5 hover:text-white">
+            <ArrowLeft className="h-4 w-4" />
           </Link>
-          <div className="h-4 w-px bg-white/10 mx-1" />
-          <div className="flex flex-col">
-            <span className="text-[11px] text-muted/80 font-mono-data tracking-[0.2em] uppercase">Workflow // Editor</span>
-            <h1 className="text-xs font-bold uppercase tracking-tight text-foreground/90">{workflowName}</h1>
+          <div className="min-w-0">
+            <h1 className="truncate text-sm font-semibold text-white">{workflowName}</h1>
+            <p className="font-mono-data text-[11px] text-neutral-500">
+              {version ? `v${version}` : "not saved yet"} · {nodes.length} step{nodes.length === 1 ? "" : "s"}
+              {dirty && <span className="ml-1 text-yellow-400">· unsaved changes</span>}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={addNode}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-wider transition-all text-muted hover:text-foreground"
-          >
-            <Plus className="w-3 h-3 text-accent" />
-            Add Agent
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button onClick={history.undo} disabled={!history.canUndo} className={btn} aria-label={`Undo (${mod} Z)`} title={`Undo (${mod} Z)`}><Undo2 className="h-3.5 w-3.5" /></button>
+          <button onClick={history.redo} disabled={!history.canRedo} className={btn} aria-label={`Redo (${mod} Shift Z)`} title={`Redo (${mod} Shift Z)`}><Redo2 className="h-3.5 w-3.5" /></button>
+          <span className="mx-1 hidden h-4 w-px bg-white/10 sm:block" />
+          <button onClick={() => addNode("agent")} className={btn} title="Add agent (A)"><Plus className="h-3.5 w-3.5 text-accent" /> <span className="hidden sm:inline">Agent</span></button>
+          <button onClick={() => addNode("review")} className={btn} title="Add review step (H)"><Pause className="h-3.5 w-3.5 text-yellow-500" /> <span className="hidden sm:inline">Review</span></button>
+          <div className="relative">
+            <button onClick={toggleVersions} className={btn} aria-expanded={showVersions} aria-haspopup="true" title="Version history"><History className="h-3.5 w-3.5" /> <span className="hidden md:inline">Versions</span></button>
+            {showVersions && (
+              <div className="absolute right-0 top-full z-30 mt-1 w-72 rounded-md border border-white/10 bg-[#141414] p-1 shadow-xl">
+                {versions === null ? (
+                  <p className="p-3 text-xs text-neutral-400">Loading…</p>
+                ) : versions.length === 0 ? (
+                  <p className="p-3 text-xs text-neutral-400">No saved versions yet. Save to create v1.</p>
+                ) : (
+                  <ul className="max-h-72 overflow-y-auto">
+                    {versions.map((v) => (
+                      <li key={v.version} className="flex items-center justify-between gap-2 rounded px-2 py-1.5 text-xs hover:bg-white/5">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-neutral-200">v{v.version} {v.version === version && <span className="text-[11px] font-normal text-green-400">current</span>}</p>
+                          <p className="truncate text-[11px] text-neutral-500">{new Date(v.created_at).toLocaleString()} · {v.nodeCount} steps{v.note ? ` · ${v.note}` : ""}</p>
+                        </div>
+                        {v.version !== version && (
+                          <button onClick={() => restore(v.version)} disabled={!!busy} className="shrink-0 rounded border border-white/10 px-2 py-0.5 text-[11px] hover:bg-white/10">
+                            {busy === `restore-${v.version}` ? "…" : "Restore"}
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+          <button onClick={duplicate} disabled={!!busy} className={btn} title="Duplicate workflow"><Copy className="h-3.5 w-3.5" /> <span className="hidden md:inline">Duplicate</span></button>
+          <button onClick={() => setShowShortcuts(true)} className={`${btn} hidden sm:flex`} aria-label="Keyboard shortcuts (?)" title="Keyboard shortcuts (?)"><Keyboard className="h-3.5 w-3.5" /></button>
+          <button onClick={onSave} disabled={saveState === "saving"} className="flex items-center gap-1.5 rounded-md border border-accent/30 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent hover:bg-accent/20 focus-visible:ring-2 focus-visible:ring-accent/60 disabled:opacity-50" title={`Save (${mod} S)`}>
+            {saveState === "saving" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : saveState === "saved" ? <Check className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
+            {saveState === "saved" ? "Saved" : "Save"}
           </button>
-          <button
-            onClick={() => {
-              const newNode: Node = {
-                id: crypto.randomUUID(),
-                type: "HITLNode",
-                position: { x: Math.random() * 400, y: Math.random() * 400 },
-                data: { 
-                  label: "Manual Review",
-                  instructions: "Review intermediate output." 
-                },
-              };
-              setNodes((nds) => nds.concat(newNode));
-              setSelectedNodeId(newNode.id);
-            }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-wider transition-all text-muted hover:text-foreground"
-          >
-            <Pause className="w-3 h-3 text-yellow-500" />
-            Add HITL
-          </button>
-
-          <button
-            onClick={onSave}
-            disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-md bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50"
-          >
-            {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-            Save Pipeline
-          </button>
-          <button 
-            onClick={() => setShowRunModal(true)}
-            disabled={isExecuting}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-md bg-green-600/10 border border-green-600/20 text-green-500 hover:bg-green-600/20 text-xs font-bold uppercase tracking-wider transition-all group"
-          >
-            {isExecuting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-current group-hover:scale-110 transition-transform" />}
-            Execute
+          <button onClick={openRun} disabled={runActive || nodes.length === 0} className="flex items-center gap-1.5 rounded-md bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:brightness-110 focus-visible:ring-2 focus-visible:ring-green-400/60 disabled:opacity-40" title={`Run (${mod} Enter)`}>
+            {runActive ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5 fill-current" />} Run
           </button>
         </div>
       </header>
 
-      {/* Execution Status Bar */}
+      {saveState === "error" && (
+        <div role="alert" className="z-10 flex items-center gap-2 border-b border-red-500/30 bg-red-500/10 px-4 py-2 text-xs text-red-200">
+          <AlertTriangle className="h-3.5 w-3.5" /> Save failed: {saveError}
+          <button onClick={onSave} className="ml-auto underline">Retry</button>
+        </div>
+      )}
+
       {executionRunId && (
-        <div className="h-10 bg-accent/5 border-b border-accent/10 flex items-center justify-between px-6 z-10 animate-in slide-in-from-top duration-300">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${
-                runData?.status === "completed" ? "bg-green-500" :
-                runData?.status === "failed" || runData?.status === "paused_error" ? "bg-red-500" :
-                "bg-accent animate-pulse"
-              }`} />
-              <span className="text-xs font-bold uppercase tracking-widest text-foreground/80">
-                {runData?.status === "running" ? "Executing Pipeline..." :
-                 runData?.status === "completed" ? "Sequence Complete" :
-                 runData?.status === "paused_hitl" ? "Waiting for Approval" :
-                 runData?.status === "paused_error" ? "Paused on Error" : 
-                 runData?.status || "Initializing..."}
-              </span>
-            </div>
-            
-            <div className="h-4 w-px bg-white/5" />
-
-            <div className="flex items-center gap-2 max-w-[300px] truncate">
-              <span className="text-[11px] text-muted/80 uppercase font-mono-data shrink-0">Input:</span>
-              <span className="text-xs text-muted/85 truncate italic">"{runData?.input_prompt || "..."}"</span>
-            </div>
-            
-            <div className="h-4 w-px bg-white/5" />
-            
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-muted/80 uppercase font-mono-data">Compute:</span>
-                <span className="text-xs font-mono-data font-bold text-accent">₹{(runData?.total_cost || 0).toFixed(5)}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-muted/80 uppercase font-mono-data">Tokens:</span>
-                <span className="text-xs font-mono-data font-bold text-foreground/60">{runData?.total_tokens || 0}</span>
-              </div>
-            </div>
+        <div className="z-10 flex flex-wrap items-center justify-between gap-2 border-b border-accent/10 bg-accent/5 px-4 py-2 text-xs" aria-live="polite">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+            <span className="flex items-center gap-2 font-semibold text-neutral-200">
+              <span className={`h-2 w-2 rounded-full ${runData?.status === "completed" ? "bg-green-500" : ["failed", "paused_error", "stopped"].includes(runData?.status || "") ? "bg-red-500" : runData?.status === "paused_hitl" ? "bg-yellow-500" : "animate-pulse bg-accent"}`} />
+              {STATUS_LABEL[runData?.status || ""] || "Starting…"}
+            </span>
+            <span className="font-mono-data text-neutral-400">₹{Number(runData?.total_cost || 0).toFixed(4)} · {runData?.total_tokens || 0} tokens</span>
           </div>
-
           <div className="flex items-center gap-3">
-             {runData?.status === "completed" && (
-                <Link 
-                  href={`/tasks/${executionRunId}`}
-                  className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-accent transition-colors flex items-center gap-1.5"
-                >
-                  View Details <ChevronRight className="w-3 h-3" />
-                </Link>
-             )}
-             <button 
-                onClick={() => setExecutionRunId(null)}
-                className="p-1 hover:bg-white/5 rounded text-muted/80 hover:text-foreground transition-colors"
-                title="Exit Live View"
-             >
-                <X className="w-3 h-3" />
-             </button>
+            <Link href={`/tasks/${executionRunId}`} className="flex items-center gap-1 font-semibold text-neutral-300 hover:text-accent">Open run <ChevronRight className="h-3 w-3" /></Link>
+            <button onClick={() => { setExecutionRunId(null); setRunData(null); setExecutionLogs([]); }} className="rounded p-1 text-neutral-400 hover:bg-white/5 hover:text-white" aria-label="Close live run view"><X className="h-3.5 w-3.5" /></button>
           </div>
         </div>
       )}
 
-      {/* Run Modal */}
-      {showRunModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowRunModal(false)} />
-          <div className="relative w-full max-w-lg modern-card bg-[#141414] rounded-2xl p-6 border-white/5 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
-                  <Play className="w-4 h-4 text-green-500 fill-current" />
-                </div>
-                <h2 className="text-sm font-bold uppercase tracking-widest">Run this workflow</h2>
-              </div>
-              <button 
-                onClick={() => setShowRunModal(false)}
-                className="p-1 hover:bg-white/5 rounded-md text-muted transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between px-1">
-                  <label className="text-[11px] font-bold text-muted/80 uppercase tracking-[0.2em]">Initial InputContext</label>
-                  <span className="text-[11px] font-mono-data text-accent opacity-40 uppercase italic">Pipeline_Ready</span>
-                </div>
-                <textarea 
-                  autoFocus
-                  value={runInput}
-                  onChange={(e) => setRunInput(e.target.value)}
-                  placeholder="Provide the initial prompt or data for the workflow..."
-                  className="w-full h-32 bg-white/[0.02] border border-white/5 p-4 rounded-xl text-xs leading-relaxed focus:ring-1 focus:ring-green-500/40 focus:border-green-500/40 transition-all outline-none resize-none tracking-tight"
-                />
-              </div>
-
-              <button
-                onClick={handleExecute}
-                disabled={isExecuting || !runInput}
-                className="w-full bg-green-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-green-500/20 transition-all disabled:opacity-30"
-              >
-                {isExecuting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-                Confirm and Run
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Execution Inspector Modal */}
-      {inspectingNode && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setInspectingNode(null)} />
-          <div className="relative w-full max-w-2xl modern-card bg-[#0a0a0a] rounded-3xl border-white/5 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
-            <div className="p-6 border-b border-white/5 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-accent/10 rounded-xl">
-                  {inspectingNode.type === 'input' ? <ChevronRight className="w-5 h-5 text-accent" /> : <ChevronRight className="w-5 h-5 text-green-500 rotate-90" />}
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
-                    Node {inspectingNode.type === 'input' ? 'Input' : 'Output'}
-                    <span className="text-xs text-muted/80 font-mono-data ml-2">[{nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data?.label || "Agent"}]</span>
-                  </h3>
-                </div>
-              </div>
-              <button 
-                onClick={() => setInspectingNode(null)}
-                className="p-2 hover:bg-white/5 rounded-full text-muted transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar font-mono-data">
-              <div className="bg-black/60 border border-white/5 rounded-2xl p-6 relative group">
-                <div className="absolute top-4 right-4 text-[11px] font-bold text-muted/80 uppercase tracking-widest">{inspectingNode.type}</div>
-                <pre className="text-[12px] leading-relaxed whitespace-pre-wrap text-foreground/80">
-                  {inspectingNode.type === 'input' 
-                    ? nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog?.input || "NO_INPUT_FOUND"
-                    : nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog?.output || "NO_OUTPUT_YET_GENERATED"}
-                </pre>
-              </div>
-
-              {inspectingNode.type === 'output' && nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <div className="text-[11px] text-muted/80 uppercase font-bold mb-1">Tokens Used</div>
-                    <div className="text-xs font-bold text-accent">{nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog.total_tokens}</div>
-                  </div>
-                  <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <div className="text-[11px] text-muted/80 uppercase font-bold mb-1">Step Cost</div>
-                    <div className="text-xs font-bold text-green-500">₹{nodesWithExecution.find(n => n.id === inspectingNode.nodeId)?.data.executionLog.step_cost.toFixed(5)}</div>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="p-6 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
-              <button 
-                onClick={() => setInspectingNode(null)}
-                className="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold uppercase tracking-widest text-muted transition-all"
-              >
-                Close
-              </button>
-              <div className="flex items-center gap-4">
-                <span className="text-xs font-mono-data text-muted/80 uppercase tracking-widest hidden md:inline">
-                  Seq_ID: {executionRunId?.split("-")[0] || "N/A"}
-                </span>
-                {executionRunId && (
-                  <Link 
-                    href={`/tasks/${executionRunId}`}
-                    className="flex items-center gap-2 px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-bold uppercase tracking-widest text-muted/85 transition-all no-underline"
-                  >
-                    View Traces <Code className="w-3 h-3" />
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Canvas Area */}
-      <main className="flex-1 relative overflow-hidden">
+      <main className="relative flex-1 overflow-hidden">
         <ReactFlow
           nodes={nodesWithExecution}
           edges={edgesWithExecution}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onNodeClick={onNodeClick}
-          onPaneClick={onPaneClick}
+          onNodeClick={(_, n) => setSelectedNodeId(n.id)}
+          onPaneClick={() => setSelectedNodeId(null)}
           nodeTypes={nodeTypes}
-          defaultEdgeOptions={defaultEdgeOptions as any}
+          defaultEdgeOptions={defaultEdgeOptions}
           connectionMode={ConnectionMode.Loose}
+          deleteKeyCode={["Backspace", "Delete"]}
           fitView
           colorMode="dark"
         >
           <Background color="#333" gap={20} />
-          <Controls className="!bg-surface !border-border !fill-white" />
-          
+          <Controls className="!border-border !bg-surface" />
+          <MiniMap pannable zoomable className="!hidden !bg-[#111] md:!block" maskColor="rgba(0,0,0,0.6)" />
           {nodes.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-              <div className="text-center space-y-4 max-w-sm px-6 py-10 border border-dashed border-white/5 rounded-3xl bg-white/[0.01]">
-                <Plus className="w-10 h-10 text-accent/20 mx-auto mb-2" />
-                <h3 className="text-sm font-bold uppercase tracking-widest text-muted/85">
-                  Add your first agent to begin building your workflow
-                </h3>
-                <p className="text-xs text-muted/80 font-mono-data italic uppercase tracking-tighter">
-                  Connect agents to define execution flow
-                </p>
+            <Panel position="top-center" className="!top-1/4">
+              <div className="max-w-sm rounded-md border border-dashed border-white/10 bg-[#0e0e0e]/90 p-6 text-center">
+                <h2 className="text-sm font-semibold text-neutral-200">Start by adding a step</h2>
+                <p className="mt-1 text-xs text-neutral-400">Add an agent and give it a prompt. Connect steps by dragging from one node&apos;s bottom handle to another&apos;s top handle.</p>
+                <div className="mt-4 flex justify-center gap-2">
+                  <button onClick={() => addNode("agent")} className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-white">Add agent (A)</button>
+                  <button onClick={() => addNode("review")} className="rounded-md border border-white/10 px-3 py-1.5 text-xs text-neutral-300">Add review (H)</button>
+                </div>
               </div>
-            </div>
+            </Panel>
           )}
-
-          <Panel position="bottom-right" className="bg-surface border border-border p-3 text-[11px] font-mono-data text-muted uppercase tracking-[0.2em] pointer-events-none">
-            HiveState_V_0.1 // Node_Cluster_Synced
-          </Panel>
         </ReactFlow>
 
-        {/* Sidebar */}
-        <CanvasSidebar
-          selectedNode={selectedNode}
-          onUpdate={updateNodeData}
-          onClose={() => setSelectedNodeId(null)}
-        />
+        <CanvasSidebar selectedNode={selectedNode} onUpdate={updateNodeData} onDelete={deleteNode} onClose={() => setSelectedNodeId(null)} />
       </main>
+
+      <Modal open={showRun} onClose={() => setShowRun(false)} title={`Run ${workflowName}`}>
+        <RunForm
+          workflows={[{ id, name: workflowName, canvas_json: JSON.parse(savedSnap || '{"nodes":[],"edges":[]}') }]}
+          initialWorkflowId={id}
+          autoFocus
+          onStarted={(runId) => {
+            setShowRun(false);
+            setRunData({ status: "queued" });
+            setExecutionLogs([]);
+            setExecutionRunId(runId);
+          }}
+        />
+      </Modal>
+
+      <Modal open={showShortcuts} onClose={() => setShowShortcuts(false)} title="Keyboard shortcuts">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+          {shortcuts(mod).map(([k, v]) => (
+            <div key={k} className="contents">
+              <dt><kbd className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 font-mono-data text-[11px]">{k}</kbd></dt>
+              <dd className="text-neutral-300">{v}</dd>
+            </div>
+          ))}
+        </dl>
+      </Modal>
+
+      <Modal
+        open={!!inspecting}
+        onClose={() => setInspecting(null)}
+        title={`${inspecting?.type === "input" ? "Input" : "Output"} · ${String(nodes.find((n) => n.id === inspecting?.nodeId)?.data?.label || "Step")}`}
+        wide
+      >
+        <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap rounded-md border border-white/5 bg-black/60 p-4 font-mono-data text-xs leading-relaxed text-neutral-200">
+          {(inspecting?.type === "input" ? inspectedLog?.input : inspectedLog?.output) || (inspectedLog?.status === "running" ? "Waiting for the first tokens…" : "Nothing recorded for this step yet.")}
+        </pre>
+        {inspecting?.type === "output" && inspectedLog?.status === "success" && (
+          <p className="mt-3 font-mono-data text-xs text-neutral-400">
+            {inspectedLog.total_tokens} tokens · ₹{Number(inspectedLog.step_cost || 0).toFixed(5)} · {inspectedLog.model_used} · {inspectedLog.attempts || 1} attempt(s)
+          </p>
+        )}
+      </Modal>
     </div>
   );
 }

@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - name: Build
+        run: npm run build
+        env:
+          # The build does not contact Supabase; placeholders satisfy the startup check.
+          SUPABASE_URL: http://127.0.0.1:54321
+          SUPABASE_SERVICE_ROLE_KEY: ci-placeholder
+          NEXT_TELEMETRY_DISABLED: "1"
+
+  database:
+    name: Migrations and demo seed
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replay every migration, seed twice, assert
+        run: bash scripts/db-replay.sh
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres

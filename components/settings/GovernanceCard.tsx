@@ -1,5 +1,7 @@
 "use client";
 
+import { MODELS, PROVIDER_LABELS } from "@/lib/models/catalog";
+
 import { useState, useEffect } from "react";
 import { ShieldAlert, Zap, Coins, Check, Loader2, Save } from "lucide-react";
 import { getGovernanceSettings, updateGovernanceSettings } from "@/app/actions/governance";
@@ -115,25 +117,29 @@ export default function GovernanceCard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-[11px] text-muted/80 uppercase font-bold tracking-widest">Primary Model</label>
+                <label className="text-[11px] text-muted/80 uppercase font-bold tracking-widest">Summary model</label>
                 <select 
                   value={settings.primary_model}
                   onChange={(e) => setSettings({ ...settings, primary_model: e.target.value })}
                   className="w-full bg-white/[0.02] border border-white/5 rounded-lg px-3 py-2 text-xs font-bold text-foreground focus:outline-none focus:border-accent/40 transition-all uppercase tracking-tighter"
                 >
-                  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                  {MODELS.map((m) => (
+                    <option key={m.id} value={m.id}>{PROVIDER_LABELS[m.provider]} · {m.label}</option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-[11px] text-muted/80 uppercase font-bold tracking-widest">Fallback Model</label>
+                <label className="text-[11px] text-muted/80 uppercase font-bold tracking-widest">Fallback model (used when a step&apos;s model fails)</label>
                 <select 
                    value={settings.fallback_model}
                    onChange={(e) => setSettings({ ...settings, fallback_model: e.target.value })}
                    className="w-full bg-white/[0.02] border border-white/5 rounded-lg px-3 py-2 text-xs font-bold text-foreground focus:outline-none focus:border-accent/40 transition-all uppercase tracking-tighter"
                 >
-                  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                  {MODELS.map((m) => (
+                    <option key={m.id} value={m.id}>{PROVIDER_LABELS[m.provider]} · {m.label}</option>
+                  ))}
                 </select>
               </div>
             </div>

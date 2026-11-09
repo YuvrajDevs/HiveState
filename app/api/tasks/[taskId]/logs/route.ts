@@ -1,5 +1,8 @@
+import { LOG_FIELDS } from "@/lib/db/fields";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ taskId: string }> }) {
   try {
@@ -7,24 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ task
 
     const { data: logs, error } = await supabaseAdmin
       .from("logs")
-      .select(`
-        id,
-        node_id,
-        node_name,
-        input,
-        output,
-        system_prompt,
-        status,
-        error,
-        error_code,
-        created_at,
-        prompt_tokens,
-        completion_tokens,
-        total_tokens,
-        step_cost,
-        duration_ms,
-        agent:agents(name)
-      `)
+      .select(LOG_FIELDS)
       .eq("run_id", taskId)
       .order("created_at", { ascending: true }); // Chronological for timeline
 

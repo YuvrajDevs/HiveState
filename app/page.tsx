@@ -2,9 +2,10 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { LayoutDashboard, Command, Plus, ArrowRight, Activity, Play, ExternalLink, AlertTriangle, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { StopTaskButton } from "@/components/tasks/StopTaskButton";
 import { ActiveTasksStream } from "@/components/dashboard/ActiveTasksStream";
 import { BudgetCard } from "@/components/dashboard/BudgetCard";
+import { GettingStarted } from "@/components/dashboard/GettingStarted";
+import { configuredProviders } from "@/lib/models";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function DashboardPage() {
   // Fetch workflows with their current state
   const { data: workflowsRaw, error } = await supabaseAdmin
     .from("workflows")
-    .select("id, name, created_at, canvas_json");
+    .select("id, name, created_at, canvas_json, is_template, is_demo");
 
   if (error) {
     console.error("Dashboard workflow fetch error:", error);
@@ -21,14 +22,25 @@ export default async function DashboardPage() {
   // Fetch runs for all these workflows to calculate stats
   const { data: runs, error: runsError } = await supabaseAdmin
     .from("runs")
-    .select("id, workflow_id, status, started_at, total_cost");
+    .select("id, workflow_id, status, started_at, total_cost, is_demo")
+    .order("started_at", { ascending: false })
+    .limit(1000);
 
   if (runsError) {
     console.error("Dashboard runs fetch error:", runsError);
   }
 
   // Process workflows and calculate stats
-  const workflowsWithStats = (workflowsRaw || []).map((workflow: any) => {
+  const providers = await configuredProviders().catch(() => ({ gemini: false, openai: false, anthropic: false }));
+  const ownWorkflows = (workflowsRaw || []).filter((w: any) => !w.is_template && !w.is_demo);
+  const onboarding = {
+    hasProvider: process.env.HIVESTATE_MOCK_LLM === "1" || Object.values(providers).some(Boolean),
+    hasWorkflow: ownWorkflows.length > 0,
+    hasRun: (runs || []).some((r: any) => !r.is_demo),
+    firstWorkflowId: ownWorkflows[0]?.id,
+  };
+
+  const workflowsWithStats = (workflowsRaw || []).filter((w: any) => !w.is_template).map((workflow: any) => {
     const workflowRuns = (runs || []).filter(r => r.workflow_id === workflow.id);
     const totalRuns = workflowRuns.length;
     const successfulRuns = workflowRuns.filter(r => r.status === 'completed').length;
@@ -111,11 +123,13 @@ export default async function DashboardPage() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight mb-1">Dashboard</h1>
             <p className="text-muted text-sm max-w-lg">
-              Build multi-agent workflows, run them, and keep an eye on cost. Start with a template or draw your own.
+              Your workflows, what is running, what needs a decision, and what it costs.
             </p>
           </div>
         </div>
       </header>
+
+      <GettingStarted {...onboarding} />
 
       {/* Needs attention */}
       {attentionRuns.length > 0 && (
@@ -257,9 +271,9 @@ export default async function DashboardPage() {
             
             <div className="space-y-4">
               <div className="flex justify-between items-center group">
-                <span className="text-[11px] uppercase text-muted/85 tracking-wider">Active Tasks</span>
+                <span className="text-[11px] uppercase text-muted/85 tracking-wider">Active runs</span>
                 <span className="text-lg font-bold font-mono-data tabular-nums text-foreground/80 group-hover:text-accent">
-                  {(runs?.filter(r => r.status === 'running').length || 0).toString().padStart(2, '0')}
+                  {runs?.filter(r => ['queued', 'running', 'resumed'].includes(r.status)).length || 0}
                 </span>
               </div>
               <div className="flex justify-between items-center group">

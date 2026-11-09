@@ -1,0 +1,19 @@
+# Optional self-hosting setup: the web app plus a dedicated queue worker.
+# Uses your Supabase project (free tier) for Postgres; nothing here needs a paid service.
+#   cp .env.example .env.local   # fill in Supabase URL/key and at least one model key
+#   docker compose up --build
+services:
+  web:
+    build: .
+    command: npm start
+    ports: ["3000:3000"]
+    env_file: .env.local
+    environment:
+      HIVESTATE_INLINE_DRAIN: "0" # requests only enqueue; the worker executes
+  worker:
+    build: .
+    command: npm run worker
+    env_file: .env.local
+    restart: unless-stopped
+    deploy:
+      replicas: 2 # safe: jobs are claimed with FOR UPDATE SKIP LOCKED

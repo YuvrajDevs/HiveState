@@ -1,5 +1,8 @@
+import { RUN_FIELDS } from "@/lib/db/fields";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ taskId: string }> }) {
   try {
@@ -7,19 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ task
 
     const { data: run, error } = await supabaseAdmin
       .from("runs")
-      .select(`
-        id,
-        status,
-        workflow_id,
-        input_prompt,
-        started_at,
-        updated_at,
-        total_cost,
-        total_tokens,
-        total_duration_ms,
-        paused_node_id,
-        workflow:workflows(id, name)
-      `)
+      .select(RUN_FIELDS)
       .eq("id", taskId)
       .single();
 

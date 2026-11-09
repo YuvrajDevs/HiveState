@@ -1,33 +1,31 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+/**
+ * Server-side client with the service-role key. It bypasses row-level security, so it must never be
+ * imported from client components (`server-only` enforces this at build time). RLS is enabled with
+ * no policies on every table, so the public anon key can read nothing.
+ *
+ * Created lazily: `next build` imports route modules to collect page data, and the build must not
+ * depend on runtime secrets. A missing variable fails loudly on first use instead. The key is never logged.
+ */
+let client: SupabaseClient | null = null;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  // We only throw if we are on the server and missing keys.
-  // This prevents build-time / bundling crashes in some environments.
-  if (typeof window === 'undefined') {
-    console.error("⛔ Supabase: Missing Server Environment Variables!");
-    throw new Error("Missing Supabase Server Environment Variables (SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)");
+function getClient(): SupabaseClient {
+  if (client) return client;
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error("Missing Supabase server environment variables (SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)");
   }
-} else {
-  // Production Debugging Helper (Server Side Only)
-  if (typeof window === 'undefined') {
-    console.log(`📡 Supabase: Initializing client...`);
-    console.log(`   URL: ${supabaseUrl.substring(0, 15)}...`);
-    console.log(`   KEY: ${supabaseServiceKey.substring(0, 10)}...[MASKED]...${supabaseServiceKey.substring(supabaseServiceKey.length - 5)}`);
-  }
+  client = createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+  return client;
 }
 
-// User's .env.local uses SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY
-export const supabaseAdmin = createClient(
-  supabaseUrl || '',
-  supabaseServiceKey || '',
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
-);
+export const supabaseAdmin: SupabaseClient = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    const c = getClient();
+    const value = Reflect.get(c, prop, c);
+    return typeof value === "function" ? value.bind(c) : value;
+  },
+});

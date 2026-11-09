@@ -1,171 +1,119 @@
 "use client";
 
-import { Handle, Position } from "@xyflow/react";
-import { Terminal, Cpu, Eye, Code, CheckCircle2, AlertOctagon, Loader2, Zap, AlertTriangle, Layers } from "lucide-react";
+import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Cpu, Eye, Code, CheckCircle2, AlertOctagon, Loader2, RotateCw, AlertTriangle, Layers, UserCheck } from "lucide-react";
+import { getModel } from "@/lib/models/catalog";
 
-export default function AgentNode({ data, selected }: any) {
-  const isRunning = data.status === "running" || data.status === "resumed";
-  const isSuccess = data.status === "success";
-  const isFailed = data.status === "failed";
-  const isPaused = data.status === "paused" || data.status === "paused_hitl" || data.status === "paused_error";
-  const isCircuitBreaker = data.pause_reason === "circuit_breaker";
+type AgentData = {
+  label?: string;
+  model?: string;
+  systemPrompt?: string;
+  is_hitl?: boolean | string;
+  retries?: number;
+  status?: string;
+  pause_reason?: string;
+  runId?: string;
+  executionLog?: { status?: string; input?: string; output?: string; attempts?: number; is_skipped?: boolean };
+  onInspect?: (type: "input" | "output") => void;
+  onRetry?: () => void;
+};
+
+const STATUS_TEXT: Record<string, string> = {
+  running: "Running", success: "Done", failed: "Failed", paused_hitl: "Review", paused_error: "Paused", idle: "Waiting",
+};
+
+export default function AgentNode({ data: raw, selected }: NodeProps) {
+  const data = raw as AgentData;
+  const status = data.status;
+  const isRunning = status === "running";
+  const isSuccess = status === "success";
+  const isFailed = status === "failed" || status === "paused_error";
+  const isReview = status === "paused_hitl";
+  const isBreaker = data.pause_reason === "circuit_breaker";
   const isMultiInput = data.executionLog?.input?.startsWith('{"inputs":');
+  const streaming = isRunning ? data.executionLog?.output : null;
+  const modelLabel = getModel(data.model)?.label || data.model || "Default model";
+  const reviewFirst = data.is_hitl === true || data.is_hitl === "true";
+
+  const border = isBreaker
+    ? "border-red-500 ring-2 ring-red-500/60"
+    : isRunning
+      ? "border-accent ring-2 ring-accent/60"
+      : isSuccess
+        ? "border-green-500/50"
+        : isFailed
+          ? "border-red-500/50"
+          : isReview
+            ? "border-yellow-500/60 ring-1 ring-yellow-500/40"
+            : selected
+              ? "border-accent/60 ring-1 ring-accent/40"
+              : "border-white/10";
 
   return (
-    <div className={`modern-card w-[280px] transition-all duration-500 overflow-hidden rounded-xl border group ${
-      isCircuitBreaker ? "ring-4 ring-red-500 shadow-[0_0_50px_rgba(239,68,68,0.4)] border-red-500 animate-pulse-slow bg-red-950/20" :
-      isRunning ? "ring-2 ring-accent shadow-[0_0_30px_rgba(59,130,246,0.3)] border-accent animate-pulse" :
-      isSuccess ? "border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.1)]" :
-      isFailed ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.1)]" :
-      selected ? "ring-2 ring-accent/50 border-accent/50 shadow-[0_0_20px_rgba(59,130,246,0.15)]" : 
-      "border-white/5 shadow-xl"
-    }`}>
-      {/* Input Handle */}
-      <Handle type="target" position={Position.Top} className="!w-2 !h-2 !bg-accent !border-none" />
+    <div className={`w-[280px] overflow-hidden rounded-md border bg-[#141414] transition-colors ${border}`} aria-label={`Agent ${data.label || ""}${status ? `, ${STATUS_TEXT[status] || status}` : ""}`}>
+      <Handle type="target" position={Position.Top} className="!h-2 !w-2 !border-none !bg-accent" />
 
-      {/* Node Header */}
-      <div className={`px-3 py-2 flex items-center justify-between border-b transition-colors duration-500 ${
-        isCircuitBreaker ? "bg-red-500/20 border-red-500/30" :
-        isSuccess ? "bg-green-500/5 border-green-500/10" :
-        isFailed ? "bg-red-500/5 border-red-500/10" :
-        isRunning ? "bg-accent/5 border-accent/10" :
-        "bg-white/[0.03] border-white/5"
-      }`}>
-        <div className="flex items-center gap-2">
-          <div className={`p-1 rounded-md transition-colors ${
-            isCircuitBreaker ? "bg-red-500 text-white animate-bounce-subtle" :
-            isSuccess ? "bg-green-500/20" :
-            isFailed ? "bg-red-500/20" :
-            isRunning ? "bg-accent/20" :
-            "bg-accent/10"
-          }`}>
-            {isCircuitBreaker ? <AlertTriangle className="w-3 h-3" /> : isRunning ? <Loader2 className="w-3 h-3 text-accent animate-spin" /> : <Cpu className={`w-3 h-3 ${isSuccess ? "text-green-500" : isFailed ? "text-red-500" : "text-accent"}`} />}
-          </div>
-          <span className="text-xs font-bold uppercase tracking-wider truncate max-w-[120px] text-foreground/90">
-            {data.label || "New Agent"}
+      <div className={`flex items-center justify-between gap-2 border-b px-3 py-2 ${isSuccess ? "border-green-500/10 bg-green-500/5" : isFailed ? "border-red-500/10 bg-red-500/5" : isRunning ? "border-accent/10 bg-accent/5" : "border-white/5 bg-white/[0.03]"}`}>
+        <div className="flex min-w-0 items-center gap-2">
+          {isBreaker ? <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-red-400" /> : isRunning ? <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-accent" /> : <Cpu className={`h-3.5 w-3.5 shrink-0 ${isSuccess ? "text-green-500" : isFailed ? "text-red-500" : "text-accent"}`} />}
+          <span className="truncate text-xs font-semibold text-neutral-100">{data.label || "New agent"}</span>
+        </div>
+        {status && (
+          <span className={`flex shrink-0 items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${isSuccess ? "border-green-500/30 text-green-400" : isFailed ? "border-red-500/30 text-red-400" : isRunning ? "border-accent/30 text-accent" : isReview ? "border-yellow-500/30 text-yellow-400" : "border-white/10 text-neutral-400"}`}>
+            {isSuccess && <CheckCircle2 className="h-2.5 w-2.5" />}
+            {isFailed && <AlertOctagon className="h-2.5 w-2.5" />}
+            {isBreaker ? "Halted" : STATUS_TEXT[status] || status}
           </span>
-        </div>
-        
-        <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded-full border text-[11px] font-bold uppercase tracking-widest transition-all ${
-          isCircuitBreaker ? "bg-red-500 text-white border-red-400 animate-pulse" :
-          isSuccess ? "bg-green-500/20 text-green-500 border-green-500/30" :
-          isFailed ? "bg-red-500/20 text-red-500 border-red-500/30" :
-          isRunning ? "bg-accent/20 text-accent border-accent/30" :
-          isPaused ? "bg-yellow-500/20 text-yellow-500 border-yellow-500/30" :
-          "bg-white/5 text-muted/80 border-white/5"
-        }`}>
-          {isCircuitBreaker && <AlertTriangle className="w-2 h-2" />}
-          {isSuccess && <CheckCircle2 className="w-2 h-2" />}
-          {isFailed && <AlertOctagon className="w-2 h-2" />}
-          {isCircuitBreaker ? "SYSTEM HALTED" : (data.status || "Ready")}
-        </div>
+        )}
       </div>
 
-      {/* Node Body */}
-      <div className="p-4 space-y-3 bg-[#0c0c0c]/50 relative">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 opacity-50 px-2 py-1 bg-white/5 rounded-md w-fit">
-            <Terminal className="w-2.5 h-2.5" />
-            <span className="text-[11px] font-mono-data uppercase tracking-widest text-foreground">
-              {data.model || "gemini-2.5-flash"}
-            </span>
-          </div>
-
-          {isMultiInput && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/10 border border-accent/20 rounded-md animate-pulse">
-              <Layers className="w-2.5 h-2.5 text-accent" />
-              <span className="text-[11px] font-bold text-accent uppercase tracking-tighter">Multi-Input</span>
-            </div>
-          )}
-
-          {/* Action Buttons (Input/Output) */}
-          {(data.executionLog || isRunning) && (
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  data.onInspect?.('input');
-                }}
-                className="p-1 hover:bg-accent/20 rounded text-muted hover:text-accent transition-colors"
-                title="View Input"
-              >
-                <Code className="w-3 h-3" />
-              </button>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  data.onInspect?.('output');
-                }}
-                className="p-1 hover:bg-green-500/20 rounded text-muted hover:text-green-500 transition-colors"
-                title="View Output"
-              >
-                <Eye className="w-3 h-3" />
-              </button>
-            </div>
-          )}
+      <div className="space-y-2 p-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono-data text-[10px] text-neutral-300">{modelLabel}</span>
+          {reviewFirst && <span className="flex items-center gap-1 rounded bg-yellow-500/10 px-1.5 py-0.5 text-[10px] text-yellow-400"><UserCheck className="h-2.5 w-2.5" /> review first</span>}
+          {isMultiInput && <span className="flex items-center gap-1 rounded bg-accent/10 px-1.5 py-0.5 text-[10px] text-accent"><Layers className="h-2.5 w-2.5" /> merges inputs</span>}
+          {(data.executionLog?.attempts || 1) > 1 && <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] text-neutral-400">{data.executionLog?.attempts} attempts</span>}
+          {data.executionLog?.is_skipped && <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] text-neutral-400">reused</span>}
         </div>
 
-        <p className="text-xs font-mono-data text-muted/85 italic line-clamp-3 leading-relaxed px-1 break-words">
-          {data.systemPrompt || "No system protocol defined."}
-        </p>
+        {streaming ? (
+          <p className="line-clamp-4 whitespace-pre-wrap break-words font-mono-data text-[11px] leading-relaxed text-neutral-200" aria-live="polite">
+            {streaming.slice(-280)}
+            <span className="ml-0.5 inline-block h-3 w-1.5 animate-pulse bg-accent align-middle" />
+          </p>
+        ) : (
+          <p className="line-clamp-3 break-words font-mono-data text-[11px] leading-relaxed text-neutral-400">{data.systemPrompt || "No instructions yet. Select this step to write them."}</p>
+        )}
 
-        {isFailed && (
-          <div className="pt-2 border-t border-red-500/10 space-y-2">
-            <button 
-              className="w-full py-1.5 rounded-md bg-accent/20 text-accent text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-accent/30 transition-all border border-accent/30 flex items-center justify-center gap-2 group/retry"
-              onClick={(e) => {
-                e.stopPropagation();
-                data.onRetry?.();
-              }}
-            >
-              <Zap className="w-2.5 h-2.5 fill-current" />
-              Retry Step
+        {(data.executionLog || isRunning) && (
+          <div className="flex gap-1.5 pt-1">
+            <button onClick={(e) => { e.stopPropagation(); data.onInspect?.("input"); }} className="nodrag flex flex-1 items-center justify-center gap-1 rounded border border-white/10 py-1 text-[10px] text-neutral-300 hover:bg-white/5">
+              <Code className="h-3 w-3" /> Input
             </button>
-            <button 
-              className="w-full py-1.5 rounded-md bg-red-500/10 text-red-500 text-[11px] font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all border border-red-500/20"
-              onClick={(e) => {
-                e.stopPropagation();
-                window.location.href = `/tasks/${data.runId}`;
-              }}
-            >
-              Debug Timeline
+            <button onClick={(e) => { e.stopPropagation(); data.onInspect?.("output"); }} className="nodrag flex flex-1 items-center justify-center gap-1 rounded border border-white/10 py-1 text-[10px] text-neutral-300 hover:bg-white/5">
+              <Eye className="h-3 w-3" /> Output
             </button>
           </div>
         )}
 
-        {isPaused && (
-           <div className="pt-2 border-t border-yellow-500/10 space-y-2">
-              <div className="text-[11px] font-bold text-yellow-500/60 uppercase tracking-widest text-center mb-2">Manual Intervention Required</div>
-              <div className="flex gap-2">
-                <button 
-                  className="flex-1 py-1.5 rounded-md bg-green-500/10 text-green-500 text-[11px] font-bold uppercase tracking-widest hover:bg-green-500/20 transition-all border border-green-500/20"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.location.href = `/tasks/${data.runId}`;
-                  }}
-                >
-                  Approve
-                </button>
-                <button 
-                  className="flex-1 py-1.5 rounded-md bg-red-500/10 text-red-500 text-[11px] font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all border border-red-500/20"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.location.href = `/tasks/${data.runId}`;
-                  }}
-                >
-                  Reject
-                </button>
-              </div>
-           </div>
+        {isFailed && data.runId && (
+          <div className="flex gap-1.5">
+            <button onClick={(e) => { e.stopPropagation(); data.onRetry?.(); }} className="nodrag flex flex-1 items-center justify-center gap-1 rounded border border-accent/30 bg-accent/10 py-1 text-[10px] font-semibold text-accent hover:bg-accent/20">
+              <RotateCw className="h-3 w-3" /> Retry
+            </button>
+            <a href={`/tasks/${data.runId}`} onClick={(e) => e.stopPropagation()} className="nodrag flex flex-1 items-center justify-center rounded border border-red-500/20 py-1 text-[10px] text-red-300 hover:bg-red-500/10">
+              Open trace
+            </a>
+          </div>
+        )}
+        {isReview && data.runId && (
+          <a href={`/tasks/${data.runId}`} onClick={(e) => e.stopPropagation()} className="nodrag block rounded border border-yellow-500/30 bg-yellow-500/10 py-1 text-center text-[10px] font-semibold text-yellow-300 hover:bg-yellow-500/20">
+            Review and approve
+          </a>
         )}
       </div>
 
-      {/* Output Handle */}
-      <Handle type="source" position={Position.Bottom} className={`!w-2 !h-2 !border-none !rounded-full transition-all duration-500 ${
-        isSuccess ? "!bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]" :
-        isRunning ? "!bg-accent shadow-[0_0_10px_rgba(59,130,246,0.6)] animate-ping" :
-        "!bg-accent/40"
-      }`} />
+      <Handle type="source" position={Position.Bottom} className={`!h-2 !w-2 !border-none ${isSuccess ? "!bg-green-500" : "!bg-accent/50"}`} />
     </div>
   );
 }
