@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ taskId: string }> }) {
   try {
     const { taskId } = await params;
@@ -23,7 +25,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ task
         total_tokens,
         step_cost,
         duration_ms,
-        agent:agents(name)
+        model_used,
+        fallback_triggered,
+        attempts,
+        is_skipped,
+        skip_reason,
+        correction_note
       `)
       .eq("run_id", taskId)
       .order("created_at", { ascending: true }); // Chronological for timeline

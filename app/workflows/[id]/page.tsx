@@ -192,7 +192,7 @@ export default function WorkflowCanvasPage() {
     if (!executionRunId) return;
     setIsExecuting(true);
     try {
-      const res = await resumeWorkflowAction(executionRunId, nodeId);
+      const res = await resumeWorkflowAction(executionRunId);
       if (res.error) throw new Error(res.error);
       
       // The polling logic will pick up the 'resumed/running' status

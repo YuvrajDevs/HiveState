@@ -1,68 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runWorkflow, assertBudgetAvailable, BudgetExceededError } from "@/lib/engine/runner";
-import { supabaseAdmin } from "@/lib/supabase";
+import { assertBudgetAvailable } from "@/lib/engine/runner";
+import { getStore } from "@/lib/store/supabase";
+import { dispatchRun } from "@/lib/queue/dispatch";
+import { workflowVariables, missingVariables } from "@/lib/engine/template";
+import { errorResponse, HttpError, parseVariables, readJson, UUID_RE } from "@/lib/http/errors";
 
+export const dynamic = "force-dynamic";
+// The run executes in after() once the response is sent; give it room to finish.
+export const maxDuration = 300;
+
+const MAX_INPUT_CHARS = 200_000;
+
+/** Queues a run. Returns immediately with the run id; execution happens on the queue. */
 export async function POST(req: NextRequest) {
   try {
-    const { workflowId, input } = await req.json();
+    const body = await readJson(req);
+    const workflowId = typeof body.workflowId === "string" ? body.workflowId.trim() : "";
+    const input = typeof body.input === "string" ? body.input : "";
+    const variables = parseVariables(body.variables);
 
-    if (!workflowId) {
-      return NextResponse.json({ error: "Missing workflowId" }, { status: 400 });
-    }
+    if (!workflowId || !UUID_RE.test(workflowId)) throw new HttpError(400, "Missing or invalid workflowId.");
+    if (!input.trim()) throw new HttpError(400, "Missing input prompt.");
+    if (input.length > MAX_INPUT_CHARS) throw new HttpError(413, `Input is too long (max ${MAX_INPUT_CHARS.toLocaleString()} characters).`);
 
-    if (!input) {
-      return NextResponse.json({ error: "Missing input prompt" }, { status: 400 });
-    }
+    const store = getStore();
+    const workflow = await store.getWorkflow(workflowId);
+    if (!workflow) throw new HttpError(404, "Workflow not found.");
+    if (!workflow.canvas_json?.nodes?.length) throw new HttpError(422, "This workflow has no steps yet. Add an agent in the editor first.");
 
-    console.log(`🚀 API: Manual trigger for workflow ${workflowId}`);
+    const missing = missingVariables(workflowVariables(workflow.canvas_json), variables);
+    if (missing.length) throw new HttpError(422, `Fill in: ${missing.join(", ")}`, { missingVariables: missing });
 
-    const { data: workflow } = await supabaseAdmin.from("workflows").select("id").eq("id", workflowId).maybeSingle();
-    if (!workflow) {
-      return NextResponse.json({ error: "Workflow not found" }, { status: 404 });
-    }
-
-    // Refuse up front (with a clear message) instead of failing silently in the background
     await assertBudgetAvailable();
-    
-    // 1. Create the Run entry first to get an ID
-    const { data: newRun, error: runErr } = await supabaseAdmin
-      .from("runs")
-      .insert({
-        workflow_id: workflowId,
-        input_prompt: input,
-        status: "running"
-      })
-      .select()
-      .single();
 
-    if (runErr || !newRun) throw new Error(`Run creation failed: ${runErr?.message || 'Unknown error'}`);
-
-    // 2. Start the engine in the background (don't await)
-    // We pass the existing runId to the runner
-    runWorkflow(workflowId, input, newRun.id, { fresh: true }).catch(err => {
-      console.error(`❌ Background Execution Error for ${newRun.id}:`, err.message);
+    const run = await store.createRun({
+      workflow_id: workflowId,
+      input_prompt: input,
+      variables,
+      status: "queued",
+      workflow_version: workflow.current_version ?? null,
     });
-
-    // 3. Return the ID immediately for redirection
-    return NextResponse.json({ runId: newRun.id, status: "started" });
-  } catch (error: any) {
-    console.error("❌ API Error:", error.message);
-    const status = error instanceof BudgetExceededError ? 402 : 500;
-    return NextResponse.json({ error: error.message }, { status });
-  }
-}
-
-export async function GET() {
-  try {
-    const { data: runs, error } = await supabaseAdmin
-      .from("runs")
-      .select("workflow_id, status, started_at");
-
-    if (error) throw error;
-
-    return NextResponse.json({ runs });
-  } catch (error: any) {
-    console.error("❌ API Error:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const { mode } = await dispatchRun(run.id, "run");
+    return NextResponse.json({ runId: run.id, status: "queued", mode }, { status: 202 });
+  } catch (err) {
+    return errorResponse(err, "run-workflow");
   }
 }

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ taskId: string }> }) {
   try {
     const { taskId } = await params;
@@ -18,7 +20,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ task
         total_tokens,
         total_duration_ms,
         paused_node_id,
-        workflow:workflows(id, name)
+        pause_reason,
+        error,
+        completed_at,
+        variables,
+        share_token,
+        parent_run_id,
+        rerun_from_node_id,
+        workflow_version,
+        consecutive_failures_count,
+        circuit_breaker_triggered,
+        workflow:workflows(id, name, canvas_json)
       `)
       .eq("id", taskId)
       .single();
