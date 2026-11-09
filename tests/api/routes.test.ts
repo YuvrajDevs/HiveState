@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { MemoryStore } from "@/lib/store/memory";
 import { MemoryQueue } from "@/lib/queue/memory";
 import { BudgetExceededError } from "@/lib/engine/engine";
+import { sanitizeSearch } from "@/lib/http/errors";
 import { agent, canvas } from "../helpers";
 
 // The route handlers use these three seams; each test gets a fresh in-memory backend.
@@ -155,5 +156,14 @@ describe("GET /api/jobs/drain", () => {
     const res = await drain(new NextRequest("http://test/api/jobs/drain", { headers: { authorization: "Bearer s3cret" } }));
     expect(await res.json()).toEqual({ processed: 1 });
     expect((await h.store.getRun(run.id))?.status).toBe("completed");
+  });
+});
+
+describe("sanitizeSearch", () => {
+  it("strips PostgREST filter delimiters and wildcards", () => {
+    expect(sanitizeSearch("a,b),output.eq.x%*")).toBe("a b output.eq.x");
+    expect(sanitizeSearch("  rate   limit ")).toBe("rate limit");
+    expect(sanitizeSearch("x".repeat(500))).toHaveLength(100);
+    expect(sanitizeSearch(null)).toBe("");
   });
 });

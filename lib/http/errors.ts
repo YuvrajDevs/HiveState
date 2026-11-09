@@ -43,3 +43,15 @@ export function parseVariables(raw: unknown): Record<string, string> {
 }
 
 export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Makes free text safe to embed in a PostgREST `or=(...)` filter: drops the characters that
+ * delimit filters or act as wildcards, collapses whitespace and caps the length.
+ */
+export function sanitizeSearch(raw: string | null | undefined, max = 100): string {
+  return String(raw || "")
+    .replace(/[,()%*\\"':]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+}

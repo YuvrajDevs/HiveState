@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Menu, Search, Play } from "lucide-react";
 import Sidebar from "@/components/sidebar";
 import { Breadcrumbs } from "@/components/shell/Breadcrumbs";
@@ -11,6 +12,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const bare = usePathname()?.startsWith("/share/"); // shared runs are shown without the app chrome
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -22,6 +24,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  if (bare) {
+    return (
+      <main id="content" className="bg-grid min-w-0 flex-1 overflow-y-auto">
+        <div className="p-4 md:p-8">{children}</div>
+      </main>
+    );
+  }
 
   return (
     <>
