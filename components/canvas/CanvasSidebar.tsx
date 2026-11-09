@@ -1,124 +1,119 @@
 "use client";
 
-import { X, Settings2, Code, Box } from "lucide-react";
+import { useId } from "react";
+import type { Node } from "@xyflow/react";
+import { X, Trash2 } from "lucide-react";
+import { MODELS, PROVIDER_LABELS, DEFAULT_MODEL, resolveModelId, type ProviderId } from "@/lib/models/catalog";
+import { extractVariables } from "@/lib/engine/template";
 
-export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) {
+const PROVIDERS: ProviderId[] = ["gemini", "openai", "anthropic"];
+
+/** Properties of the selected step: prompt, model, reliability settings. Full-width sheet on phones. */
+export default function CanvasSidebar({
+  selectedNode,
+  onUpdate,
+  onDelete,
+  onClose,
+}: {
+  selectedNode: Node | null;
+  onUpdate: (id: string, patch: Record<string, unknown>) => void;
+  onDelete: (id: string) => void;
+  onClose: () => void;
+}) {
+  const ids = useId();
   if (!selectedNode) return null;
-
-  const handleChange = (field: string, value: string) => {
-    onUpdate(selectedNode.id, { ...selectedNode.data, [field]: value });
-  };
+  const data = selectedNode.data as Record<string, unknown>;
+  const set = (field: string, value: unknown) => onUpdate(selectedNode.id, { [field]: value });
+  const isAgent = selectedNode.type !== "HITLNode";
+  const model = resolveModelId((data.model as string) || DEFAULT_MODEL);
+  const vars = extractVariables(String(data.systemPrompt || data.instructions || ""));
+  const field = "w-full rounded-md border border-white/10 bg-white/[0.03] p-2 text-xs outline-none focus-visible:ring-2 focus-visible:ring-accent/60";
+  const label = "mb-1 block text-[11px] font-semibold uppercase tracking-wider text-neutral-400";
 
   return (
-    <aside className="fixed right-0 top-0 bottom-0 w-80 glass-panel border-l border-white/10 z-20 shadow-2xl flex flex-col font-mono-data animate-in slide-in-from-right duration-300">
-      <header className="px-4 py-3 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-        <div className="flex items-center gap-2.5 text-accent">
-          <div className="p-1.5 bg-accent/10 rounded-md">
-            <Settings2 className="w-4 h-4" />
-          </div>
-          <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] shadow-sm">Agent Spec</h3>
-        </div>
-        <button 
-          onClick={onClose}
-          className="hover:text-accent transition-all p-1.5 rounded-md hover:bg-accent/10 text-muted/85"
-        >
-          <X className="w-4 h-4" />
+    <aside
+      aria-label="Step settings"
+      className="glass-panel absolute inset-x-0 bottom-0 z-20 flex max-h-[70%] flex-col border-t border-white/10 sm:inset-x-auto sm:bottom-0 sm:right-0 sm:top-0 sm:max-h-none sm:w-80 sm:border-l sm:border-t-0"
+    >
+      <header className="flex items-center justify-between border-b border-white/5 px-4 py-2.5">
+        <h2 className="text-xs font-semibold text-white">{isAgent ? "Agent" : "Review step"}</h2>
+        <button onClick={onClose} className="rounded p-1 text-neutral-400 hover:bg-white/5 hover:text-white" aria-label="Close step settings">
+          <X className="h-4 w-4" />
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-5 space-y-6">
-        {/* Node Label */}
-        <div className="space-y-2">
-          <label className="text-[11px] text-muted/85 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
-            <Box className="w-3 h-3" />
-            Node Identity
-          </label>
-          <input
-            type="text"
-            value={selectedNode.data.label || ""}
-            onChange={(e) => handleChange("label", e.target.value)}
-            className="w-full bg-white/[0.03] border border-white/10 p-2.5 rounded-lg text-xs focus:ring-1 focus:ring-accent/50 focus:border-accent/50 focus:outline-none transition-all placeholder:text-muted/80"
-            placeholder="e.g. Data_Analyst"
-          />
+      <div className="flex-1 space-y-4 overflow-y-auto p-4">
+        <div>
+          <label htmlFor={`${ids}-label`} className={label}>Name</label>
+          <input id={`${ids}-label`} value={String(data.label || "")} onChange={(e) => set("label", e.target.value)} className={field} placeholder="e.g. Researcher" />
         </div>
 
-        {selectedNode.type === 'AgentNode' ? (
+        {isAgent ? (
           <>
-            {/* Model Selection */}
-            <div className="space-y-2">
-              <label className="text-[11px] text-muted/85 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
-                <Settings2 className="w-3 h-3" />
-                Model Core
-              </label>
-              <div className="relative">
-                <select
-                  value={selectedNode.data.model || "gemini-2.5-flash-lite"}
-                  onChange={(e) => handleChange("model", e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/10 p-2.5 rounded-lg text-xs focus:ring-1 focus:ring-accent/50 focus:border-accent/50 focus:outline-none transition-all appearance-none cursor-pointer text-foreground/80 font-bold"
-                >
-                  <option value="gemini-2.5-flash">GEMINI-2.5-FLASH</option>
-                  <option value="gemini-2.5-flash-lite">GEMINI-2.5-FLASH-LITE</option>
-                </select>
-                <div className="absolute right-3 top-3 pointer-events-none opacity-30">
-                  <Settings2 className="w-3 h-3" />
-                </div>
-              </div>
+            <div>
+              <label htmlFor={`${ids}-model`} className={label}>Model</label>
+              <select id={`${ids}-model`} value={model} onChange={(e) => set("model", e.target.value)} className={field}>
+                {PROVIDERS.map((p) => (
+                  <optgroup key={p} label={PROVIDER_LABELS[p]}>
+                    {MODELS.filter((m) => m.provider === p).map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.label} · ${m.input}/${m.output} per 1M
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+                {!MODELS.some((m) => m.id === model) && <option value={model}>{model}</option>}
+              </select>
+              <p className="mt-1 text-[11px] text-neutral-500">If this model fails, the fallback model from Settings is used.</p>
             </div>
 
-            {/* System Prompt */}
-            <div className="space-y-2">
-              <label className="text-[11px] text-muted/85 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
-                <Code className="w-3 h-3" />
-                Agent settings
-              </label>
+            <div>
+              <label htmlFor={`${ids}-prompt`} className={label}>Instructions (system prompt)</label>
               <textarea
-                value={selectedNode.data.systemPrompt || ""}
-                onChange={(e) => handleChange("systemPrompt", e.target.value)}
-                rows={10}
-                className="w-full bg-white/[0.03] border border-white/10 p-4 rounded-lg text-xs leading-relaxed focus:ring-1 focus:ring-accent/50 focus:border-accent/50 focus:outline-none transition-all resize-none font-mono text-foreground/70 placeholder:text-muted/80"
-                placeholder="DEFINE SYSTEM PROTOCOL..."
+                id={`${ids}-prompt`}
+                value={String(data.systemPrompt || "")}
+                onChange={(e) => set("systemPrompt", e.target.value)}
+                rows={9}
+                className={`${field} resize-y font-mono-data leading-relaxed`}
+                placeholder="What should this agent do with its input? Use {{name}} for values supplied per run."
               />
+              {vars.length > 0 && <p className="mt-1 font-mono-data text-[11px] text-accent/80">Variables: {vars.map((v) => `{{${v}}}`).join(" ")}</p>}
             </div>
 
-            {/* HITL Toggle for Agents */}
-            <div className="pt-4 border-t border-white/5">
-              <label className="flex items-center justify-between cursor-pointer group">
-                <div className="space-y-1">
-                  <span className="text-xs font-bold uppercase tracking-widest text-foreground/80 group-hover:text-accent transition-colors">Manual Review</span>
-                  <p className="text-[11px] text-muted/80 uppercase tracking-tighter">Pause before this agent executes</p>
-                </div>
-                <input 
-                  type="checkbox" 
-                  checked={!!selectedNode.data.is_hitl}
-                  onChange={(e) => handleChange("is_hitl", e.target.checked.toString())}
-                  className="w-4 h-4 rounded border-white/10 bg-white/5 text-accent focus:ring-accent/50 focus:ring-offset-0"
-                />
-              </label>
-            </div>
+            <fieldset className="grid grid-cols-2 gap-3 border-t border-white/5 pt-4">
+              <legend className={`${label} col-span-2`}>Reliability</legend>
+              <div>
+                <label htmlFor={`${ids}-retries`} className="mb-1 block text-[11px] text-neutral-400">Retries</label>
+                <input id={`${ids}-retries`} type="number" min={0} max={5} value={Number(data.retries ?? 2)} onChange={(e) => set("retries", Math.max(0, Math.min(5, Number(e.target.value) || 0)))} className={field} />
+              </div>
+              <div>
+                <label htmlFor={`${ids}-timeout`} className="mb-1 block text-[11px] text-neutral-400">Timeout (s)</label>
+                <input id={`${ids}-timeout`} type="number" min={5} max={300} value={Math.round(Number(data.timeoutMs ?? 90000) / 1000)} onChange={(e) => set("timeoutMs", Math.max(5, Math.min(300, Number(e.target.value) || 90)) * 1000)} className={field} />
+              </div>
+              <p className="col-span-2 text-[11px] text-neutral-500">Retries apply to rate limits, server errors and timeouts, with exponential backoff.</p>
+            </fieldset>
+
+            <label className="flex cursor-pointer items-start justify-between gap-3 border-t border-white/5 pt-4">
+              <span>
+                <span className="block text-xs font-semibold text-neutral-200">Review before running</span>
+                <span className="text-[11px] text-neutral-500">Pause and wait for approval before this agent runs.</span>
+              </span>
+              <input type="checkbox" checked={data.is_hitl === true || data.is_hitl === "true"} onChange={(e) => set("is_hitl", e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#3b82f6]" />
+            </label>
           </>
         ) : (
-          <>
-            {/* HITL Instructions */}
-            <div className="space-y-2">
-              <label className="text-[11px] text-muted/85 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
-                <Code className="w-3 h-3" />
-                Review Instructions
-              </label>
-              <textarea
-                value={selectedNode.data.instructions || ""}
-                onChange={(e) => handleChange("instructions", e.target.value)}
-                rows={5}
-                className="w-full bg-white/[0.03] border border-white/10 p-4 rounded-lg text-xs leading-relaxed focus:ring-1 focus:ring-accent/50 focus:border-accent/50 focus:outline-none transition-all resize-none font-mono text-foreground/70 placeholder:text-muted/80"
-                placeholder="Instructions for the human reviewer..."
-              />
-            </div>
-          </>
+          <div>
+            <label htmlFor={`${ids}-instr`} className={label}>Instructions for the reviewer</label>
+            <textarea id={`${ids}-instr`} value={String(data.instructions || "")} onChange={(e) => set("instructions", e.target.value)} rows={5} className={`${field} resize-y`} placeholder="What should the reviewer check?" />
+            <p className="mt-1 text-[11px] text-neutral-500">The run pauses here. Approving passes the input through, with any note you add.</p>
+          </div>
         )}
       </div>
 
-
-      <footer className="px-4 py-3 border-t border-white/5 bg-white/[0.02] italic text-[11px] text-muted/80 text-center tracking-[0.3em] font-mono-data">
-        SYSTEM LAYER 3 // ENCRYPTED
+      <footer className="border-t border-white/5 p-3">
+        <button onClick={() => onDelete(selectedNode.id)} className="flex w-full items-center justify-center gap-1.5 rounded-md border border-red-500/20 px-3 py-1.5 text-xs text-red-300 hover:bg-red-500/10">
+          <Trash2 className="h-3.5 w-3.5" /> Delete step
+        </button>
       </footer>
     </aside>
   );

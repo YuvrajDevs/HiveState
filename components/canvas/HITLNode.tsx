@@ -3,6 +3,7 @@
 import { Handle, Position } from "@xyflow/react";
 import { UserCheck, Pause, Info, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function HITLNode({ data, selected }: any) {
   const isPaused = data.status === "paused_hitl";
   const isSuccess = data.status === "success";
@@ -71,7 +72,7 @@ export default function HITLNode({ data, selected }: any) {
             onClick={(e) => {
               e.stopPropagation();
               if (data.runId) {
-                window.location.href = `/tasks/${data.runId}`;
+                window.location.assign(`/tasks/${data.runId}`);
               }
             }}
           >
