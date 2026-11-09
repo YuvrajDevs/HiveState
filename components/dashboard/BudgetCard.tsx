@@ -61,7 +61,7 @@ export function BudgetCard() {
       <div className="space-y-4 pt-1">
         <div className="flex items-end justify-between">
           <div className="space-y-1">
-            <span className="text-xs uppercase text-muted/80 font-bold tracking-widest block">Today's Spend</span>
+            <span className="text-xs uppercase text-muted/80 font-bold tracking-widest block">Today&apos;s spend</span>
             <div className="flex items-baseline gap-1">
               <span className={`text-xl font-bold font-mono-data tabular-nums ${isExceeded ? 'text-red-500' : 'text-foreground/80'}`}>
                 ₹{spend.toFixed(2)}

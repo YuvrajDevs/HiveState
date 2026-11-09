@@ -19,14 +19,14 @@ const GROUPS: { label: string; items: Item[] }[] = [
   {
     label: "Monitor",
     items: [
-      { name: "Tasks", href: "/tasks", icon: Activity, badge: true },
+      { name: "Run history", href: "/tasks", icon: Activity, badge: true },
       { name: "Traces", href: "/traces", icon: ScrollText },
     ],
   },
   { label: "Admin", items: [{ name: "Settings", href: "/settings", icon: Settings }] },
 ];
 
-type Health = { ready: boolean; database: string; geminiConfigured: boolean } | null;
+type Health = { ready: boolean; database: string; queue?: string; mock?: boolean; providers?: Record<string, boolean> } | null;
 
 function usePoll<T>(url: string, ms: number, initial: T): T {
   const [data, setData] = useState<T>(initial);
@@ -117,14 +117,18 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
           {health === null ? (
             <p className="text-xs text-muted">Checking setup…</p>
           ) : health.ready ? (
-            <p className="flex items-center gap-2 text-xs text-neutral-300">
-              <span className="h-2 w-2 rounded-full bg-green-500" /> Connected · database &amp; Gemini ready
+            <p className="flex items-start gap-2 text-xs text-neutral-300">
+              <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-green-500" aria-hidden />
+              <span>
+                Ready · {health.mock ? "offline mock models" : Object.entries(health.providers || {}).filter(([, on]) => on).map(([p]) => ({ gemini: "Gemini", openai: "OpenAI", anthropic: "Anthropic" } as Record<string, string>)[p]).join(", ")}
+                {health.queue === "missing" && <span className="block text-yellow-300/80">Queue table missing: apply the latest migration.</span>}
+              </span>
             </p>
           ) : (
             <Link href="/settings" className="block rounded-md border border-yellow-500/30 bg-yellow-500/10 p-2.5 text-xs text-yellow-200 hover:bg-yellow-500/15">
               <span className="font-semibold">Setup needed</span>
               <span className="mt-0.5 block text-yellow-200/80">
-                {health.database !== "ok" ? "Can't reach the database. Check SUPABASE_URL and the service key." : "GEMINI_API_KEY is missing."}
+                {health.database !== "ok" ? "Can't reach the database. Check SUPABASE_URL and the service key." : "No model provider key yet. Add a Gemini, OpenAI or Anthropic key."}
               </span>
             </Link>
           )}

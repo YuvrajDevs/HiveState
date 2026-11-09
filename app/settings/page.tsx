@@ -31,7 +31,7 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    fetchProviders();
+    fetchProviders(); // eslint-disable-line react-hooks/set-state-in-effect -- initial data load
   }, [fetchProviders]);
 
   const handleEdit = (provider: AIProvider) => {
@@ -69,7 +69,7 @@ export default function SettingsPage() {
       <section className="space-y-6">
         <div className="flex items-center gap-2 text-xs font-bold text-muted/80 uppercase tracking-[0.2em] px-1">
           <Settings2 className="w-3.5 h-3.5" />
-          AI Providers & Clusters
+          Model providers
         </div>
 
         {loading && providers.length === 0 ? (

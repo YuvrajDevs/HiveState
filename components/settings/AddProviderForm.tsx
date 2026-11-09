@@ -86,7 +86,7 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
             </div>
             <div>
               <h2 className="text-sm font-bold uppercase tracking-widest">
-                {editingProvider ? "Edit Provider" : "Register Cluster"}
+                {editingProvider ? "Edit Provider" : "Add provider"}
               </h2>
               <p className="text-xs text-muted/80 uppercase tracking-tighter mt-0.5">
                 Add an AI provider endpoint and API key
@@ -205,7 +205,7 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
               className="flex-[2] py-3 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl text-xs tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg shadow-accent/20 disabled:opacity-50"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              {editingProvider ? "Update Provider" : "Register Cluster"}
+              {editingProvider ? "Update Provider" : "Add provider"}
             </button>
           </div>
         </form>

@@ -1,5 +1,7 @@
 "use client";
 
+import { RUN_STATUS } from "@/components/ui/StatusBadge";
+
 import { useState, useEffect } from "react";
 import { Loader2, ChevronLeft, ChevronRight, XCircle, AlertCircle, Activity } from "lucide-react";
 import Link from "next/link";
@@ -24,7 +26,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
     const saved = localStorage.getItem("hivestate_dismissed_tasks");
     if (saved) {
       try {
-        setDismissedTaskIds(JSON.parse(saved));
+        setDismissedTaskIds(JSON.parse(saved)); // eslint-disable-line react-hooks/set-state-in-effect -- one-time read from localStorage
       } catch (e) {
         console.error("Failed to parse dismissed tasks", e);
       }
@@ -64,22 +66,22 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
   // Safety: If current page becomes invalid due to tasks finishing
   useEffect(() => {
     if (page >= totalPages && totalPages > 0) {
-      setPage(totalPages - 1);
+      setPage(totalPages - 1); // eslint-disable-line react-hooks/set-state-in-effect -- clamp after the list shrinks
     }
   }, [tasks.length, totalPages, page]);
 
   const handleStopAll = async () => {
-    if (confirm("Terminate ALL running tasks in the cluster?")) {
+    if (confirm("Stop all queued and running runs? Finished steps are kept.")) {
       const res = await stopAllTasks();
       if (res.success) {
-        setTasks(prev => prev.filter(t => t.status !== 'running'));
+        setTasks(prev => prev.filter(t => !['queued', 'running', 'resumed'].includes(t.status)));
       }
     }
   };
 
   const handleClearHistory = () => {
     const finishedIds = tasks
-      .filter(t => !['running', 'paused_hitl', 'paused_error', 'resumed'].includes(t.status))
+      .filter(t => !['queued', 'running', 'paused_hitl', 'paused_error', 'resumed'].includes(t.status))
       .map(t => t.id);
     const newDismissed = Array.from(new Set([...dismissedTaskIds, ...finishedIds]));
     setDismissedTaskIds(newDismissed);
@@ -92,7 +94,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
   // Safety: If current page becomes invalid due to tasks finishing
   useEffect(() => {
     if (page >= totalPages && totalPages > 0) {
-      setPage(totalPages - 1);
+      setPage(totalPages - 1); // eslint-disable-line react-hooks/set-state-in-effect -- clamp after the list shrinks
     }
   }, [visibleTasks.length, totalPages, page]);
 
@@ -165,8 +167,8 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
           {visibleTasks.slice(page * itemsPerPage, (page + 1) * itemsPerPage).map((run: any) => {
             const workflow = workflows?.find(w => w.id === run.workflow_id);
             const progress = run.status === 'completed' ? 100 : (run.progress || 0);
-            const isRunning = run.status === 'running';
-            const isFailed = run.status === 'failed';
+            const isRunning = ['queued', 'running', 'resumed'].includes(run.status);
+            const isFailed = run.status === 'failed' || run.status === 'stopped';
             const isPaused = run.status === 'paused_hitl' || run.status === 'paused_error';
             const isBroken = run.circuit_breaker_triggered;
 
@@ -196,16 +198,12 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
                   <div className="flex items-center justify-between mb-3 shrink-0">
                     <span className={`text-[11px] font-bold uppercase tracking-widest ${
                       isBroken ? 'text-red-500 font-black' :
-                      run.status === 'running' ? 'text-accent/80' : 
+                      isRunning ? 'text-accent/80' : 
                       run.status === 'completed' ? 'text-green-500/60' :
-                      run.status === 'failed' ? 'text-red-500/60' :
+                      isFailed ? 'text-red-500/60' :
                       'text-yellow-500/60'
                     }`}>
-                      {isBroken ? 'Circuit Broken' :
-                       run.status === 'running' ? 'Active Runner' : 
-                       run.status === 'completed' ? 'Success' :
-                       run.status === 'failed' ? 'Failed' :
-                       'Intervention'}
+                      {isBroken ? 'Halted' : (RUN_STATUS[run.status]?.label || run.status)}
                     </span>
                     {isRunning ? (
                       <Loader2 className="w-3 h-3 text-accent animate-spin" />
@@ -223,7 +221,7 @@ export function ActiveTasksStream({ initialTasks, workflows }: ActiveTasksStream
                   </div>
 
                   <h3 className="text-[11px] font-bold uppercase truncate mb-auto text-foreground/90">
-                    {workflow?.name || "Autonomous Task"}
+                    {workflow?.name || "Deleted workflow"}
                   </h3>
 
                   <div className="mt-4">

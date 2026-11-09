@@ -9,12 +9,18 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   useEffect(() => {
     console.error(error);
   }, [error]);
+  // In production React replaces server error messages with a generic one; show something useful instead.
+  const hidden = error.message.startsWith("An error occurred in the Server Components render");
   const dbHint = /supabase|fetch failed|ECONNREFUSED|API key/i.test(error.message);
   return (
     <div className="mx-auto max-w-xl space-y-3 py-10">
       <ErrorState
         title="This page couldn't load"
-        message={dbHint ? "The database could not be reached. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY." : error.message}
+        message={
+          dbHint ? "The database could not be reached. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."
+          : hidden ? "The server could not load this page. Usually the database is unreachable or a migration has not been applied; the server log has details."
+          : error.message
+        }
         onRetry={reset}
       />
       <p className="text-xs text-neutral-400">

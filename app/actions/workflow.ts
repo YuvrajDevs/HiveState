@@ -157,7 +157,7 @@ export async function getTemplates() {
   }
 }
 
-export async function useTemplate(templateId: string, customName?: string) {
+export async function createFromTemplate(templateId: string, customName?: string) {
   try {
     // 1. Fetch template
     const { data: template, error: fetchError } = await supabaseAdmin
