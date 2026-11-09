@@ -1,0 +1,23 @@
+name: Recover queued runs
+
+# Safety net for the run queue: picks up jobs whose worker was cut off (expired lease) or that
+# were queued while no request was draining. Free on GitHub Actions; does nothing until configured.
+# Configure: repository variable HIVESTATE_URL (e.g. https://hive-state.vercel.app) and
+# secret CRON_SECRET (the same value as the app's CRON_SECRET env var).
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  drain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Call the drain endpoint
+        env:
+          URL: ${{ vars.HIVESTATE_URL }}
+          SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$SECRET" ]; then echo "Not configured; skipping."; exit 0; fi
+          curl -fsS --max-time 300 -H "Authorization: Bearer $SECRET" "$URL/api/jobs/drain"
