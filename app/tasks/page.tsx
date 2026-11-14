@@ -1,5 +1,6 @@
+import { LoadError } from "@/components/shell/LoadError";
 import { supabaseAdmin } from "@/lib/supabase";
-import { Activity, AlertTriangle } from "lucide-react";
+import { Activity } from "lucide-react";
 import TasksContent from "@/components/tasks/TasksContent";
 
 export const dynamic = "force-dynamic";
@@ -27,11 +28,7 @@ export default async function TasksPage() {
 
   if (error) {
     return (
-      <div className="p-12 text-center brutalist-border bg-white/[0.04]">
-        <AlertTriangle className="w-12 h-12 text-danger mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-danger">Could not load runs</h2>
-        <p className="text-muted text-sm mt-2 font-mono-data">{error.message}</p>
-      </div>
+      <LoadError what="runs" retryHref="/tasks" />
     );
   }
 

@@ -39,7 +39,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: Canva
         <div className="space-y-2">
           <label className="text-micro text-muted/85 flex items-center gap-2 font-semibold px-1">
             <Box className="w-3 h-3" />
-            Node identity
+            Name
           </label>
           <input
             type="text"
@@ -56,7 +56,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: Canva
             <div className="space-y-2">
               <label className="text-micro text-muted/85 flex items-center gap-2 font-semibold px-1">
                 <Settings2 className="w-3 h-3" />
-                Model core
+                Model
               </label>
               <div className="relative">
                 <select
@@ -77,7 +77,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: Canva
             <div className="space-y-2">
               <label className="text-micro text-muted/85 flex items-center gap-2 font-semibold px-1">
                 <Code className="w-3 h-3" />
-                Agent settings
+                Instructions
               </label>
               <textarea
                 value={selectedNode.data.systemPrompt || ""}
@@ -93,7 +93,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: Canva
               <label className="flex items-center justify-between cursor-pointer group">
                 <div className="space-y-1">
                   <span className="text-xs font-semibold text-foreground/80 group-hover:text-accent transition-colors">Manual review</span>
-                  <p className="text-micro text-muted/80">Pause before this agent executes</p>
+                  <p className="text-micro text-muted/80">Wait for a person before this agent runs</p>
                 </div>
                 <input 
                   type="checkbox" 
@@ -125,9 +125,6 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: Canva
       </div>
 
 
-      <footer className="px-4 py-3 border-t border-white/5 bg-white/[0.02] italic text-micro text-muted/80 text-center font-mono-data">
-        SYSTEM LAYER 3 // ENCRYPTED
-      </footer>
     </aside>
   );
 }

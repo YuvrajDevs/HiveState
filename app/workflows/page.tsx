@@ -1,4 +1,5 @@
 "use client";
+import { LoadError } from "@/components/shell/LoadError";
 import { parseCanvas, type Run, type Workflow } from "@/types/domain";
 
 type WorkflowWithStats = Workflow & { created_at: string; totalRuns: number; successRate: number; lastRunTime: string | null };
@@ -31,6 +32,7 @@ export default function WorkflowsPage() {
   const [workflows, setWorkflows] = useState<WorkflowWithStats[]>([]);
   const [templates, setTemplates] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "most_used" | "recent">("recent");
   const [isCreating, setIsCreating] = useState(false);
@@ -44,7 +46,9 @@ export default function WorkflowsPage() {
           fetch("/api/run-workflow"),
           getTemplates()
         ]);
-        
+        // A failed request is an error to show, not an empty list
+        if (!wRes.ok || !rRes.ok || tRes.error) throw new Error("Could not load workflows");
+
         const [wData, rData] = await Promise.all([
           wRes.json(),
           rRes.json()
@@ -76,6 +80,7 @@ export default function WorkflowsPage() {
         setTemplates(templatesRaw);
       } catch (err) {
         console.error("Failed to load workflows:", err);
+        setLoadFailed(true);
       } finally {
         setLoading(false);
       }
@@ -202,6 +207,8 @@ export default function WorkflowsPage() {
             <div key={i} className="h-48 modern-card bg-white/5" />
           ))}
         </div>
+      ) : loadFailed ? (
+        <LoadError what="workflows" retryHref="/workflows" />
       ) : filteredWorkflows.length === 0 ? (
         <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl bg-white/[0.01]">
           <Terminal className="w-10 h-10 text-muted/85 mx-auto mb-4" />

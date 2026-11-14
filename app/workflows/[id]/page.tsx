@@ -1,4 +1,5 @@
 "use client";
+import { LoadError } from "@/components/shell/LoadError";
 import type { AgentNodeData, CanvasNode, Log, Run } from "@/types/domain";
 
 import { errorMessage } from "@/lib/errors";
@@ -57,6 +58,7 @@ export default function WorkflowCanvasPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [workflowName, setWorkflowName] = useState("");
+  const [loadFailed, setLoadFailed] = useState(false);
   
   // Execution State
   const initialRunId = searchParams.get("runId");
@@ -101,6 +103,7 @@ export default function WorkflowCanvasPage() {
         }
       } else if (error) {
         console.error("Workflow fetch failed:", error);
+        setLoadFailed(true);
       }
       setIsLoading(false);
     }
@@ -548,7 +551,13 @@ export default function WorkflowCanvasPage() {
           <Background color="#333" gap={20} />
           <Controls className="!bg-surface !border-border !fill-white" />
           
-          {nodes.length === 0 && (
+          {loadFailed && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center p-6">
+              <div className="w-full max-w-md"><LoadError what="this workflow" retryHref={`/workflows/${id}`} /></div>
+            </div>
+          )}
+
+          {!loadFailed && !isLoading && nodes.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
               <div className="text-center space-y-4 max-w-sm px-6 py-10 border border-dashed border-white/5 rounded-3xl bg-white/[0.01]">
                 <Plus className="w-10 h-10 text-accent/20 mx-auto mb-2" />

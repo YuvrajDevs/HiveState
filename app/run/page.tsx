@@ -183,7 +183,7 @@ function RunContent() {
                 disabled={isRunning}
                 className="w-full bg-white/[0.03] border border-white/10 p-3 rounded-lg text-xs font-medium focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all outline-none appearance-none cursor-pointer"
               >
-                <option value="" disabled>--- SELECT CLUSTER ---</option>
+                <option value="" disabled>Choose a workflow</option>
                 {loading ? (
                   <option disabled>Loading workflows…</option>
                 ) : workflows.length === 0 ? (
@@ -226,8 +226,8 @@ function RunContent() {
                     )}
                   </div>
                   <div>
-                    <h4 className="text-xs font-semibold text-foreground/80 mb-0.5">Attach Source Code or Data</h4>
-                    <p className="text-micro text-muted/80">Supports PDF, Markdown, Plain Text</p>
+                    <h4 className="text-xs font-semibold text-foreground/80 mb-0.5">Attach a file</h4>
+                    <p className="text-micro text-muted/80">PDF, Markdown or plain text</p>
                   </div>
                 </div>
               </label>
@@ -271,7 +271,7 @@ function RunContent() {
             
             <div className="px-1 flex items-center gap-2">
               <Zap className="w-3 h-3 text-warning/40" />
-              <span className="text-micro text-muted/80">Input will be processed as the primary workflow context head.</span>
+              <span className="text-micro text-muted/80">This becomes the first agent’s input.</span>
             </div>
           </div>
 
