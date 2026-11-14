@@ -29,7 +29,7 @@ colours in `lib/tags.ts`, data shapes in `types/domain.ts`. This document explai
 |---|---|
 | `background` · `sidebar` · `surface` · `surface-2` · `canvas` | Charcoal layers, page to card; `canvas` for the workflow editor and code wells |
 | `border` · `border-strong` | Hairlines; strong for hover and focus edges |
-| `foreground` · `muted` · `subtle` | Text: 16.5:1, 7.7:1 and 5.6:1 on the page |
+| `foreground` · `muted` · `subtle` | Text: 15.6:1, 7.0:1 and 5.1:1 on the page |
 | `accent` | Lavender: primary action, selection, running state |
 | `success` · `warning` · `danger` | State only: completed, needs review or paused, failed |
 | `tag-violet` · `tag-blue` · `tag-yellow` · `tag-pink` · `tag-green` | Pastel identity for workflows, always with dark text; `tagColor(id)` keeps a workflow's colour stable |

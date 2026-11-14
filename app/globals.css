@@ -18,9 +18,9 @@
   --color-border-strong: #3a3a3a;
 
   /* Text */
-  --color-foreground: #f0f0f0;    /* 16.5:1 on background */
-  --color-muted: #a3a3a3;         /* 7.7:1, secondary text */
-  --color-subtle: #8a8a8a;        /* 5.6:1, meta and hints */
+  --color-foreground: #f0f0f0;    /* 15.6:1 on background */
+  --color-muted: #a3a3a3;         /* 7.0:1, secondary text */
+  --color-subtle: #8a8a8a;        /* 5.1:1, meta and hints */
 
   /* Action and state */
   --color-accent: #3b7bff;
