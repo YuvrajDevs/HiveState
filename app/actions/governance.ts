@@ -1,4 +1,6 @@
 "use server";
+
+import { SETTINGS_LOCKED_MESSAGE, settingsLocked } from "@/lib/demo";
 import type { GovernanceSettings } from "@/types/domain";
 
 import { errorMessage } from "@/lib/errors";
@@ -23,6 +25,7 @@ export async function getGovernanceSettings() {
 }
 
 export async function updateGovernanceSettings(settings: GovernanceSettings) {
+  if (settingsLocked()) return { error: SETTINGS_LOCKED_MESSAGE };
   try {
     // Keep exactly one settings row: update it by id instead of inserting a new row on every save
     const { data: existing } = await supabaseAdmin
@@ -56,4 +59,9 @@ export async function getTodaySpend() {
     console.error("Failed to fetch today spend:", error);
     return { success: false, error: errorMessage(error) };
   }
+}
+
+/** Whether the settings screen should show as read-only. */
+export async function getSettingsLocked() {
+  return settingsLocked();
 }

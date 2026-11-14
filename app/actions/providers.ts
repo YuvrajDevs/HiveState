@@ -1,5 +1,7 @@
 "use server";
 
+import { SETTINGS_LOCKED_MESSAGE, settingsLocked } from "@/lib/demo";
+
 import { errorMessage } from "@/lib/errors";
 import { supabaseAdmin } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
@@ -56,6 +58,7 @@ export async function getProviders() {
 }
 
 export async function saveProvider(provider: Partial<AIProvider>) {
+  if (settingsLocked()) return { error: SETTINGS_LOCKED_MESSAGE };
   try {
     const updateData: Record<string, unknown> = {
       ...provider,
@@ -95,6 +98,7 @@ export async function saveProvider(provider: Partial<AIProvider>) {
 }
 
 export async function deleteProvider(id: string) {
+  if (settingsLocked()) return { error: SETTINGS_LOCKED_MESSAGE };
   try {
     const { error } = await supabaseAdmin
       .from("ai_providers")
@@ -112,6 +116,7 @@ export async function deleteProvider(id: string) {
 }
 
 export async function setDefaultProvider(id: string) {
+  if (settingsLocked()) return { error: SETTINGS_LOCKED_MESSAGE };
   try {
     // 1. Unset all defaults
     await supabaseAdmin
@@ -135,6 +140,7 @@ export async function setDefaultProvider(id: string) {
 }
 
 export async function toggleProviderStatus(id: string, isActive: boolean) {
+  if (settingsLocked()) return { error: SETTINGS_LOCKED_MESSAGE };
   try {
     const { error } = await supabaseAdmin
       .from("ai_providers")

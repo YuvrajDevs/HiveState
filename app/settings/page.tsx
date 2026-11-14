@@ -1,5 +1,6 @@
 "use client";
 
+import { getSettingsLocked } from "@/app/actions/governance";
 import { useState, useEffect, useCallback } from "react";
 import { 
   Plus, 
@@ -18,6 +19,7 @@ import GovernanceCard from "@/components/settings/GovernanceCard";
 export default function SettingsPage() {
   const [providers, setProviders] = useState<AIProvider[]>([]);
   const [loading, setLoading] = useState(true);
+  const [locked, setLocked] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProvider, setEditingProvider] = useState<AIProvider | null>(null);
 
@@ -33,6 +35,7 @@ export default function SettingsPage() {
   // Initial load: state is set only after the request resolves, and not after unmount
   useEffect(() => {
     let live = true;
+    getSettingsLocked().then((v) => live && setLocked(v));
     getProviders().then((result) => {
       if (!live) return;
       if (result.success) setProviders(result.providers || []);
@@ -58,6 +61,11 @@ export default function SettingsPage() {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+          {locked && (
+            <p className="mt-2 inline-flex items-center gap-2 rounded-lg bg-surface-2 px-3 py-1.5 text-xs text-muted">
+              <span className="h-1.5 w-1.5 rounded-full bg-warning" aria-hidden /> Read-only in the live demo: you can look, but changes are not saved.
+            </p>
+          )}
           <p className="text-muted/85 text-xs">
             Daily budget, models and AI provider keys. 
           </p>

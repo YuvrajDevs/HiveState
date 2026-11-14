@@ -1,8 +1,8 @@
-import type { CanvasEdge, CanvasNode } from "@/types/domain";
+import type { CanvasNode } from "@/types/domain";
 import { errorMessage } from "@/lib/errors";
 import { supabaseAdmin } from "@/lib/supabase";
 import { executeUnifiedModel } from "@/lib/models";
-import crypto from "crypto";
+import { entryNodes, hasCycle, isCircuitBroken, parentsOf, readyNodes as findReadyNodes, stepFingerprint } from "./graph";
 
 
 /**
@@ -64,15 +64,8 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
     }
 
     // 3. Resolve Execution dependencies
-    const inDegreeMap = new Map<string, string[]>(); // nodeId -> list of parentIds
-    nodes.forEach((n: CanvasNode) => inDegreeMap.set(n.id, []));
-    edges.forEach((e: CanvasEdge) => {
-      const parents = inDegreeMap.get(e.target) || [];
-      parents.push(e.source);
-      inDegreeMap.set(e.target, parents);
-    });
-
-    const roots = nodes.filter((n: CanvasNode) => (inDegreeMap.get(n.id) || []).length === 0);
+    const inDegreeMap = parentsOf(nodes, edges); // nodeId -> list of parentIds
+    const roots = entryNodes(nodes, edges);
     if (roots.length === 0) {
       throw new Error("Cannot execute workflow: No entry point found (no node without incoming edges).");
     }
@@ -175,11 +168,7 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
       }
 
       // Find nodes whose parents are all completed but they themselves are not
-      const readyNodes = nodes.filter((node: CanvasNode) => {
-        if (completedNodeIds.has(node.id)) return false;
-        const parents = inDegreeMap.get(node.id) || [];
-        return parents.every(pId => completedNodeIds.has(pId));
-      });
+      const readyNodes = findReadyNodes(nodes, edges, completedNodeIds);
 
       if (readyNodes.length === 0) {
         const remaining = nodes.filter((n: CanvasNode) => !completedNodeIds.has(n.id));
@@ -284,7 +273,7 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
         console.log(`🤖 Engine: Executing ${node.data.label} (Node: ${node.id})...`);
         
         // --- IDEMPOTENCY CHECK ---
-        const fingerprint = generateFingerprint(currentRunId!, node.id, nodeInput, node.data.systemPrompt ?? "");
+        const fingerprint = stepFingerprint(currentRunId!, node.id, nodeInput, node.data.systemPrompt ?? "");
         const { data: existingSuccess } = await supabaseAdmin
           .from("logs")
           .select("*")
@@ -346,7 +335,7 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
         // Increment failure count
         const { data: runData } = await supabaseAdmin.from("runs").select("consecutive_failures_count").eq("id", currentRunId).single();
         const newCount = (runData?.consecutive_failures_count || 0) + 1;
-        const isBroken = newCount >= 3;
+        const isBroken = isCircuitBroken(newCount);
 
         await supabaseAdmin
           .from("runs")
@@ -465,38 +454,6 @@ export async function resumeWorkflow(runId: string, nodeId?: string, editedInput
   return runWorkflow(run.workflow_id, run.input_prompt, runId);
 }
 
-/**
- * DFS-based cycle detection for visual graph.
- */
-function hasCycle(nodes: CanvasNode[], edges: CanvasEdge[]): boolean {
-  const adj = new Map<string, string[]>();
-  nodes.forEach(n => adj.set(n.id, []));
-  edges.forEach(e => adj.get(e.source)?.push(e.target));
-
-  const visited = new Set<string>();
-  const recStack = new Set<string>();
-
-  function isCyclic(id: string): boolean {
-    if (recStack.has(id)) return true;
-    if (visited.has(id)) return false;
-
-    visited.add(id);
-    recStack.add(id);
-
-    const neighbors = adj.get(id) || [];
-    for (const neighbor of neighbors) {
-      if (isCyclic(neighbor)) return true;
-    }
-
-    recStack.delete(id);
-    return false;
-  }
-
-  for (const node of nodes) {
-    if (isCyclic(node.id)) return true;
-  }
-  return false;
-}
 
 /**
  * Atomic execution of a single node using Gemini.
@@ -581,11 +538,4 @@ async function executeNodeStep(runId: string, node: CanvasNode, input: string, f
   }
 }
 
-/**
- * Generates a deterministic hash for node execution.
- */
-function generateFingerprint(runId: string, nodeId: string, input: string, systemPrompt: string): string {
-  const payload = `${runId}:${nodeId}:${input}:${systemPrompt}`;
-  return crypto.createHash("sha256").update(payload).digest("hex");
-}
 

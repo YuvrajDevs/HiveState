@@ -26,12 +26,17 @@ export default function GovernanceCard() {
     init();
   }, []);
 
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const handleSave = async () => {
     setSaving(true);
     const res = await updateGovernanceSettings(settings);
     if (res.success) {
+      setSaveError(null);
       setShowSaved(true);
       setTimeout(() => setShowSaved(false), 2000);
+    } else {
+      setSaveError(res.error ?? "Could not save settings.");
     }
     setSaving(false);
   };
@@ -108,6 +113,7 @@ export default function GovernanceCard() {
                  onClick={() => setSettings({ ...settings, context_optimization_enabled: !settings.context_optimization_enabled })}>
               <div className="space-y-1">
                 <h4 className="text-xs font-semibold text-muted/80">Context summarization</h4>
+          {saveError && <p role="alert" className="mt-2 text-xs text-danger">{saveError}</p>}
                 <p className="text-micro text-muted/80 leading-relaxed">Compress large initial inputs into a semantic summary to save ~40% tokens on downstream nodes.</p>
               </div>
               <div className={`w-10 h-5 rounded-full relative transition-all ${settings.context_optimization_enabled ? 'bg-accent/40' : 'bg-white/10'}`}>

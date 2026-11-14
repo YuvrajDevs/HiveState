@@ -1,10 +1,13 @@
 "use server";
 
+import { SETTINGS_LOCKED_MESSAGE, settingsLocked } from "@/lib/demo";
+
 import { errorMessage } from "@/lib/errors";
 import { supabaseAdmin } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
 export async function saveApiKey(provider: string, key: string) {
+  if (settingsLocked()) return { error: SETTINGS_LOCKED_MESSAGE };
   if (!key || key.trim() === "") {
     return { error: "Key cannot be empty" };
   }
