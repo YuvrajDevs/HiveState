@@ -1,3 +1,4 @@
+import { errorMessage } from "@/lib/errors";
 import { NextRequest, NextResponse } from "next/server";
 import { runWorkflow, assertBudgetAvailable, BudgetExceededError } from "@/lib/engine/runner";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -45,10 +46,10 @@ export async function POST(req: NextRequest) {
 
     // 3. Return the ID immediately for redirection
     return NextResponse.json({ runId: newRun.id, status: "started" });
-  } catch (error: any) {
-    console.error("❌ API Error:", error.message);
+  } catch (error: unknown) {
+    console.error("❌ API Error:", errorMessage(error));
     const status = error instanceof BudgetExceededError ? 402 : 500;
-    return NextResponse.json({ error: error.message }, { status });
+    return NextResponse.json({ error: errorMessage(error) }, { status });
   }
 }
 
@@ -61,8 +62,8 @@ export async function GET() {
     if (error) throw error;
 
     return NextResponse.json({ runs });
-  } catch (error: any) {
-    console.error("❌ API Error:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("❌ API Error:", errorMessage(error));
+    return NextResponse.json({ error: errorMessage(error) }, { status: 500 });
   }
 }

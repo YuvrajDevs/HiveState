@@ -1,3 +1,4 @@
+import { errorMessage } from "@/lib/errors";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
@@ -29,11 +30,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ task
       .order("created_at", { ascending: true }); // Chronological for timeline
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: errorMessage(error) }, { status: 500 });
     }
 
     return NextResponse.json({ logs });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ error: errorMessage(error) }, { status: 500 });
   }
 }

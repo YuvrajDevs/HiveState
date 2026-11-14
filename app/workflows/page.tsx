@@ -1,4 +1,7 @@
 "use client";
+import { parseCanvas, type Run, type Workflow } from "@/types/domain";
+
+type WorkflowWithStats = Workflow & { created_at: string; totalRuns: number; successRate: number; lastRunTime: string | null };
 
 import { useState, useEffect } from "react";
 import { 
@@ -7,27 +10,26 @@ import {
   Play, 
   Edit3, 
   Terminal, 
-  BarChart3, 
+  
   Clock, 
   ArrowUpDown,
-  Filter,
+  
   Activity,
-  ChevronRight,
-  MoreVertical,
+  
+  
   Layers,
   CheckCircle2,
-  AlertCircle
 } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { createWorkflow, getTemplates, useTemplate, renameWorkflow } from "@/app/actions/workflow";
+import { createWorkflow, getTemplates, createFromTemplate, renameWorkflow } from "@/app/actions/workflow";
 import { useRouter } from "next/navigation";
-import { Copy, Sparkles, Wand2, ChevronDown } from "lucide-react";
+import { Sparkles, Wand2, ChevronDown } from "lucide-react";
 
 export default function WorkflowsPage() {
   const router = useRouter();
-  const [workflows, setWorkflows] = useState<any[]>([]);
-  const [templates, setTemplates] = useState<any[]>([]);
+  const [workflows, setWorkflows] = useState<WorkflowWithStats[]>([]);
+  const [templates, setTemplates] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "most_used" | "recent">("recent");
@@ -48,17 +50,17 @@ export default function WorkflowsPage() {
           rRes.json()
         ]);
         
-        const workflowsRaw = (wData.workflows || []).filter((w: any) => !w.is_template);
+        const workflowsRaw = (wData.workflows || []).filter((w: Workflow) => !w.is_template);
         const templatesRaw = tRes.data || [];
         const runsRaw = rData.runs || [];
 
-        const workflowsWithStats = workflowsRaw.map((workflow: any) => {
-          const workflowRuns = runsRaw.filter((r: any) => r.workflow_id === workflow.id);
+        const workflowsWithStats: WorkflowWithStats[] = workflowsRaw.map((workflow: Workflow & { created_at: string }) => {
+          const workflowRuns = runsRaw.filter((r: Run) => r.workflow_id === workflow.id);
           const totalRuns = workflowRuns.length;
-          const successfulRuns = workflowRuns.filter((r: any) => r.status === 'completed').length;
+          const successfulRuns = workflowRuns.filter((r: Run) => r.status === 'completed').length;
           const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 0;
           
-          const lastRun = workflowRuns.sort((a: any, b: any) => 
+          const lastRun = workflowRuns.sort((a: Run, b: Run) => 
             new Date(b.started_at).getTime() - new Date(a.started_at).getTime()
           )[0];
 
@@ -100,7 +102,7 @@ export default function WorkflowsPage() {
     if (!name) return;
 
     setIsCreating(true);
-    const { data, error } = await useTemplate(templateId, name);
+    const { data, error } = await createFromTemplate(templateId, name);
     if (data) {
       router.push(`/workflows/${data.id}`);
     } else {
@@ -135,7 +137,7 @@ export default function WorkflowsPage() {
       {/* Header Section */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-8">
         <div>
-          <h1 className="text-3xl font-black tracking-tight uppercase tracking-[0.1em] text-foreground/90">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground/90">
             Workflows
           </h1>
           <p className="text-muted/80 text-xs mt-1 italic">
@@ -146,7 +148,7 @@ export default function WorkflowsPage() {
         <button 
           onClick={handleCreate}
           disabled={isCreating}
-          className="bg-accent text-white px-6 py-3 text-xs font-bold rounded-xl hover:shadow-lg hover:shadow-accent/40 transition-all flex items-center justify-center gap-2 uppercase tracking-widest disabled:opacity-50"
+          className="bg-accent text-white px-6 py-3 text-xs font-semibold rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {isCreating ? (
             <Activity className="w-4 h-4 animate-spin" />
@@ -179,10 +181,8 @@ export default function WorkflowsPage() {
             ].map((option) => (
               <button
                 key={option.id}
-                onClick={() => setSortBy(option.id as any)}
-                className={`
-                  flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase transition-all
-                  ${sortBy === option.id 
+                onClick={() => setSortBy(option.id as typeof sortBy)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-micro font-semibold transition-all ${sortBy === option.id 
                     ? "bg-accent text-white shadow-sm" 
                     : "text-muted/80 hover:text-muted hover:bg-white/5"}
                 `}
@@ -195,27 +195,22 @@ export default function WorkflowsPage() {
         </div>
       </div>
 
-      {/* Registry Grid List */}
+      {/* Workflow grid */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-50">
           {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="h-48 modern-card animate-pulse bg-white/5" />
+            <div key={i} className="h-48 modern-card bg-white/5" />
           ))}
         </div>
       ) : filteredWorkflows.length === 0 ? (
         <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl bg-white/[0.01]">
           <Terminal className="w-10 h-10 text-muted/85 mx-auto mb-4" />
-          <h3 className="text-muted/80 text-xs font-bold uppercase tracking-[0.2em]">Registry Empty</h3>
-          <p className="text-[11px] text-muted/80 italic mt-1 font-mono-data">Initialize your first system sequence to begin.</p>
+          <h3 className="text-muted/80 text-xs font-semibold">No workflows yet</h3>
+          <p className="text-micro text-muted/80 italic mt-1 font-mono-data">Create one, or start from a template.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredWorkflows.map((workflow) => {
-            const canvas = typeof workflow.canvas_json === 'string' 
-              ? JSON.parse(workflow.canvas_json) 
-              : (workflow.canvas_json || {});
-            const nodeCount = canvas.nodes?.length || 0;
-            
             return (
               <div 
                 key={workflow.id} 
@@ -223,7 +218,9 @@ export default function WorkflowsPage() {
               >
                 {/* Status Bar */}
                 <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
-                  <span className="text-[11px] font-semibold uppercase tracking-widest text-muted/80">Workflow</span>
+                  <span className="flex items-center gap-2 text-micro font-semibold text-muted/80">
+                    {parseCanvas(workflow.canvas_json).nodes?.length ?? 0} agents
+                  </span>
                   <button 
                     onClick={() => handleRename(workflow.id, workflow.name)}
                     aria-label={`Rename ${workflow.name}`}
@@ -236,7 +233,7 @@ export default function WorkflowsPage() {
 
                 <div className="p-5 flex-1 glass-shine">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-sm font-black uppercase tracking-tight group-hover:text-accent transition-colors leading-none">
+                    <h3 className="text-sm font-semibold tracking-tight group-hover:text-accent transition-colors leading-none">
                       {workflow.name}
                     </h3>
                   </div>
@@ -244,14 +241,14 @@ export default function WorkflowsPage() {
 
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div className="space-y-1">
-                      <span className="text-[11px] text-muted/80 uppercase font-bold tracking-widest block">Success Rate</span>
+                      <span className="text-micro text-muted/80 font-semibold block">Success rate</span>
                       <div className="flex items-center gap-2">
-                        <CheckCircle2 className={`w-3 h-3 ${workflow.successRate > 80 ? "text-green-500/50" : workflow.successRate > 50 ? "text-yellow-500/50" : "text-red-500/50"}`} />
-                        <span className="text-xs font-black font-mono-data text-foreground/80">{workflow.successRate}%</span>
+                        <CheckCircle2 className={`w-3 h-3 ${workflow.successRate > 80 ? "text-success/50" : workflow.successRate > 50 ? "text-warning/50" : "text-danger/50"}`} />
+                        <span className="text-xs font-semibold font-mono-data text-foreground/80">{workflow.successRate}%</span>
                       </div>
                     </div>
                     <div className="space-y-1 text-right">
-                      <span className="text-[11px] text-muted/80 uppercase font-bold tracking-widest block">Last run</span>
+                      <span className="text-micro text-muted/80 font-semibold block">Last run</span>
                       <div className="flex items-center gap-1 justify-end">
                         <Clock className="w-3 h-3 text-muted/80" />
                         <span className="text-xs font-mono-data text-muted/85">
@@ -260,7 +257,7 @@ export default function WorkflowsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center gap-2 text-[11px] text-muted/80 font-mono-data uppercase tracking-widest">
+                  <div className="mt-2 flex items-center gap-2 text-micro text-muted/80">
                     <span>Total Runs: {workflow.totalRuns}</span>
                   </div>
                 </div>
@@ -269,14 +266,14 @@ export default function WorkflowsPage() {
                 <div className="p-2 bg-black/40 flex items-center gap-1 border-t border-white/5 opacity-80 group-hover:opacity-100 transition-opacity">
                   <Link 
                     href={`/workflows/${workflow.id}`}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-bold uppercase transition-all border border-white/5 text-muted hover:text-foreground"
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-micro font-semibold transition-all border border-white/5 text-muted hover:text-foreground"
                   >
                     <Edit3 className="w-3 h-3" />
                     Edit
                   </Link>
                   <Link 
                     href={`/run?id=${workflow.id}`}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-accent text-white text-[11px] font-bold uppercase transition-all shadow-md group/run"
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-accent text-white text-micro font-semibold transition-all shadow-md group/run"
                   >
                     <Play className="w-3 h-3 fill-current group-hover/run:scale-110 transition-transform" />
                     Run
@@ -296,10 +293,10 @@ export default function WorkflowsPage() {
             onClick={() => setIsTemplatesCollapsed(!isTemplatesCollapsed)}
           >
             <div className="flex items-center gap-3">
-              <Sparkles className="w-5 h-5 text-accent animate-pulse" />
+              <Sparkles className="w-5 h-5 text-accent" />
               <div>
-                <h2 className="text-lg font-black uppercase tracking-tight text-foreground/80 group-hover:text-accent transition-colors">Template Library</h2>
-                <p className="text-xs text-muted/80 uppercase tracking-widest font-mono-data">Start from a ready-made workflow</p>
+                <h2 className="text-lg font-semibold tracking-tight text-foreground/80 group-hover:text-accent transition-colors">Template library</h2>
+                <p className="text-xs text-muted/80">Start from a ready-made workflow</p>
               </div>
             </div>
             <button className={`p-2 rounded-full hover:bg-white/5 transition-all ${isTemplatesCollapsed ? "" : "rotate-180"}`}>
@@ -316,19 +313,19 @@ export default function WorkflowsPage() {
                 >
                   <div className="p-5 flex-1 glass-shine">
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-sm font-black uppercase tracking-tight text-accent/90">
+                      <h3 className="text-sm font-semibold tracking-tight text-accent/90">
                         {template.template_name || template.name}
                       </h3>
                       <Wand2 className="w-4 h-4 text-accent/40 group-hover:text-accent transition-colors" />
                     </div>
                     <p className="text-xs text-muted/85 leading-relaxed mb-4">
-                      {template.template_description || "Pre-configured agent cluster for specialized tasks."}
+                      {template.template_description || "A ready-made workflow you can copy and edit."}
                     </p>
                     
-                    <div className="flex items-center gap-4 text-[11px] font-mono-data uppercase tracking-widest text-muted/80">
+                    <div className="flex items-center gap-4 text-micro text-muted/80">
                       <div className="flex items-center gap-1.5">
                         <Layers className="w-3 h-3 text-accent/40" />
-                        <span>{template.canvas_json?.nodes?.length || 0} Agents</span>
+                        <span>{parseCanvas(template.canvas_json).nodes?.length || 0} agents</span>
                       </div>
                     </div>
                   </div>
@@ -336,10 +333,10 @@ export default function WorkflowsPage() {
                   <div className="p-2 bg-accent/10 border-t border-accent/20 flex items-center justify-center">
                     <button 
                       onClick={() => handleUseTemplate(template.id, template.template_name || template.name)}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-accent text-white text-[11px] font-bold uppercase transition-all shadow-md active:scale-95"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-accent text-white text-micro font-semibold transition-all shadow-md active:scale-95"
                     >
                       <Plus className="w-3 h-3" />
-                      Use Template
+                      Use template
                     </button>
                   </div>
                 </div>

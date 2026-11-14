@@ -1,5 +1,7 @@
 "use server";
+import type { GovernanceSettings } from "@/types/domain";
 
+import { errorMessage } from "@/lib/errors";
 import { supabaseAdmin } from "@/lib/supabase";
 
 export async function getGovernanceSettings() {
@@ -14,13 +16,13 @@ export async function getGovernanceSettings() {
     if (error) throw error;
     
     return { success: true, settings: data };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to fetch governance settings:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: errorMessage(error) };
   }
 }
 
-export async function updateGovernanceSettings(settings: any) {
+export async function updateGovernanceSettings(settings: GovernanceSettings) {
   try {
     // Keep exactly one settings row: update it by id instead of inserting a new row on every save
     const { data: existing } = await supabaseAdmin
@@ -39,9 +41,9 @@ export async function updateGovernanceSettings(settings: any) {
     if (error) throw error;
     
     return { success: true, settings: data };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to update governance settings:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: errorMessage(error) };
   }
 }
 
@@ -50,8 +52,8 @@ export async function getTodaySpend() {
     const { data, error } = await supabaseAdmin.rpc('get_today_spend');
     if (error) throw error;
     return { success: true, spend: data };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to fetch today spend:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: errorMessage(error) };
   }
 }

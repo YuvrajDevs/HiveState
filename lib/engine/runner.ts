@@ -1,3 +1,5 @@
+import type { CanvasEdge, CanvasNode } from "@/types/domain";
+import { errorMessage } from "@/lib/errors";
 import { supabaseAdmin } from "@/lib/supabase";
 import { executeUnifiedModel } from "@/lib/models";
 import crypto from "crypto";
@@ -63,14 +65,14 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
 
     // 3. Resolve Execution dependencies
     const inDegreeMap = new Map<string, string[]>(); // nodeId -> list of parentIds
-    nodes.forEach((n: any) => inDegreeMap.set(n.id, []));
-    edges.forEach((e: any) => {
+    nodes.forEach((n: CanvasNode) => inDegreeMap.set(n.id, []));
+    edges.forEach((e: CanvasEdge) => {
       const parents = inDegreeMap.get(e.target) || [];
       parents.push(e.source);
       inDegreeMap.set(e.target, parents);
     });
 
-    const roots = nodes.filter((n: any) => (inDegreeMap.get(n.id) || []).length === 0);
+    const roots = nodes.filter((n: CanvasNode) => (inDegreeMap.get(n.id) || []).length === 0);
     if (roots.length === 0) {
       throw new Error("Cannot execute workflow: No entry point found (no node without incoming edges).");
     }
@@ -173,14 +175,14 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
       }
 
       // Find nodes whose parents are all completed but they themselves are not
-      const readyNodes = nodes.filter((node: any) => {
+      const readyNodes = nodes.filter((node: CanvasNode) => {
         if (completedNodeIds.has(node.id)) return false;
         const parents = inDegreeMap.get(node.id) || [];
         return parents.every(pId => completedNodeIds.has(pId));
       });
 
       if (readyNodes.length === 0) {
-        const remaining = nodes.filter((n: any) => !completedNodeIds.has(n.id));
+        const remaining = nodes.filter((n: CanvasNode) => !completedNodeIds.has(n.id));
         if (remaining.length > 0) {
           throw new Error(`Execution stalled: ${remaining.length} nodes are unreachable.`);
         }
@@ -190,7 +192,7 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
       console.log(`🚀 Engine: Executing branch level (${readyNodes.length} nodes parallel)`);
 
       // HITL Check: If any ready node is HITL or has is_hitl flag, we pause before executing it
-      const hitlNode = readyNodes.find((n: any) => n.type === "HITLNode" || n.data?.is_hitl);
+      const hitlNode = readyNodes.find((n: CanvasNode) => n.type === "HITLNode" || n.data?.is_hitl);
       if (hitlNode) {
         console.log(`⏸️ Engine: HITL Pause at ${hitlNode.data?.label || "Manual Review"}`);
         
@@ -207,7 +209,7 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
         } else {
           // Structured JSON input for multi-parent nodes
           const inputs = parents.map((pId: string) => {
-            const pNode = nodes.find((n: any) => n.id === pId);
+            const pNode = nodes.find((n: CanvasNode) => n.id === pId);
             return {
               source_node: pNode?.data?.label || "Previous Agent",
               content: nodeOutputs.get(pId) || ""
@@ -256,7 +258,7 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
 
 
       // Execute ready nodes in parallel
-      const results = await Promise.all(readyNodes.map(async (node: any) => {
+      const results = await Promise.all(readyNodes.map(async (node: CanvasNode) => {
         const parents = inDegreeMap.get(node.id) || [];
         const { data: latestRun } = await supabaseAdmin.from("runs").select("context_summary").eq("id", currentRunId!).single();
         const activeInput = latestRun?.context_summary || input;
@@ -270,7 +272,7 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
         } else {
           // Structured JSON input for multi-parent nodes
           const inputs = parents.map((pId: string) => {
-            const pNode = nodes.find((n: any) => n.id === pId);
+            const pNode = nodes.find((n: CanvasNode) => n.id === pId);
             return {
               source_node: pNode?.data?.label || "Previous Agent",
               content: nodeOutputs.get(pId) || ""
@@ -282,7 +284,7 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
         console.log(`🤖 Engine: Executing ${node.data.label} (Node: ${node.id})...`);
         
         // --- IDEMPOTENCY CHECK ---
-        const fingerprint = generateFingerprint(currentRunId!, node.id, nodeInput, node.data.systemPrompt);
+        const fingerprint = generateFingerprint(currentRunId!, node.id, nodeInput, node.data.systemPrompt ?? "");
         const { data: existingSuccess } = await supabaseAdmin
           .from("logs")
           .select("*")
@@ -419,8 +421,8 @@ export async function runWorkflow(workflowId: string, input: string, runId?: str
     console.log("🏁 Workflow Execution: ALL NODES PROCESSED");
     return { runId: currentRunId, status: "completed" };
 
-  } catch (error: any) {
-    console.error("⛔ Workflow Engine Fatal Error:", error.message);
+  } catch (error: unknown) {
+    console.error("⛔ Workflow Engine Fatal Error:", errorMessage(error));
     if (currentRunId) {
       await supabaseAdmin
         .from("runs")
@@ -466,7 +468,7 @@ export async function resumeWorkflow(runId: string, nodeId?: string, editedInput
 /**
  * DFS-based cycle detection for visual graph.
  */
-function hasCycle(nodes: any[], edges: any[]): boolean {
+function hasCycle(nodes: CanvasNode[], edges: CanvasEdge[]): boolean {
   const adj = new Map<string, string[]>();
   nodes.forEach(n => adj.set(n.id, []));
   edges.forEach(e => adj.get(e.source)?.push(e.target));
@@ -499,7 +501,7 @@ function hasCycle(nodes: any[], edges: any[]): boolean {
 /**
  * Atomic execution of a single node using Gemini.
  */
-async function executeNodeStep(runId: string, node: any, input: string, fingerprint?: string) {
+async function executeNodeStep(runId: string, node: CanvasNode, input: string, fingerprint?: string) {
 
   const nodeLabel = node.data.label || "Untitled Agent";
   const systemPrompt = node.data.systemPrompt || "You are a helpful assistant.";
@@ -557,7 +559,7 @@ async function executeNodeStep(runId: string, node: any, input: string, fingerpr
 
     return { output, cost, totalTokens, durationMs, status: "success" };
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     const durationMs = Math.round(performance.now() - startTime);
     await supabaseAdmin
       .from("logs")
@@ -567,15 +569,15 @@ async function executeNodeStep(runId: string, node: any, input: string, fingerpr
         node_name: nodeLabel,
         input: input,
         status: "failed",
-        error: err.message,
-        error_code: err.code || "UNKNOWN_ERROR",
+        error: errorMessage(err),
+        error_code: (err as { code?: string })?.code || "UNKNOWN_ERROR",
         duration_ms: durationMs,
         system_prompt: systemPrompt,
         fingerprint: fingerprint
       });
 
 
-    return { status: "failed", error: err.message, cost: 0, totalTokens: 0, durationMs };
+    return { status: "failed", error: errorMessage(err), cost: 0, totalTokens: 0, durationMs };
   }
 }
 

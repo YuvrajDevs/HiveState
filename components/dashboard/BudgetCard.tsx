@@ -47,48 +47,48 @@ export function BudgetCard() {
   return (
     <div className="modern-card p-5 space-y-4 rounded-xl border-white/5 bg-white/[0.01] relative overflow-hidden group">
       <div className="flex items-center justify-between border-b border-white/5 pb-2">
-        <h3 className="text-[11px] font-bold text-muted/80 uppercase tracking-[0.2em] flex items-center gap-2">
+        <h3 className="text-micro font-semibold text-muted/80 flex items-center gap-2">
           <Coins className="w-3 h-3 text-accent" />
           Daily budget
         </h3>
-        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter ${
-          isExceeded ? 'bg-red-500/20 text-red-500 border border-red-500/20' : 'bg-accent/10 text-accent/60 border border-accent/10'
+        <span className={`text-micro font-semibold px-2 py-0.5 rounded-full ${
+          isExceeded ? 'bg-white/[0.04] text-danger border border-white/10' : 'bg-accent/10 text-accent/60 border border-accent/10'
         }`}>
-          {isExceeded ? 'Limit Reached' : 'Quota Active'}
+          {isExceeded ? 'Limit reached' : 'Within budget'}
         </span>
       </div>
 
       <div className="space-y-4 pt-1">
         <div className="flex items-end justify-between">
           <div className="space-y-1">
-            <span className="text-xs uppercase text-muted/80 font-bold tracking-widest block">Today's Spend</span>
+            <span className="text-xs text-muted/80 font-semibold block">Today&rsquo;s spend</span>
             <div className="flex items-baseline gap-1">
-              <span className={`text-xl font-bold font-mono-data tabular-nums ${isExceeded ? 'text-red-500' : 'text-foreground/80'}`}>
+              <span className={`text-xl font-bold font-mono-data tabular-nums ${isExceeded ? 'text-danger' : 'text-foreground/80'}`}>
                 ₹{spend.toFixed(2)}
               </span>
-              <span className="text-xs text-muted/80 font-bold uppercase tracking-tighter">/ ₹{limit}</span>
+              <span className="text-xs text-muted/80 font-semibold">/ ₹{limit}</span>
             </div>
           </div>
-          <Wallet className={`w-8 h-8 opacity-[0.03] absolute right-4 bottom-8 ${isExceeded ? 'text-red-500 opacity-[0.1]' : 'text-accent'}`} />
+          <Wallet className={`w-8 h-8 opacity-[0.03] absolute right-4 bottom-8 ${isExceeded ? 'text-danger opacity-[0.1]' : 'text-accent'}`} />
         </div>
 
         <div className="space-y-2">
           <div className="h-1.5 w-full bg-white/[0.03] rounded-full overflow-hidden border border-white/5">
             <motion.div 
-              className={`h-full ${isExceeded ? 'bg-red-500' : 'bg-accent'}`}
+              className={`h-full ${isExceeded ? 'bg-danger' : 'bg-accent'}`}
               initial={{ width: 0 }}
               animate={{ width: `${percentage}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
             />
           </div>
-          <div className="flex justify-between items-center text-[11px] font-mono-data uppercase text-muted/80 tracking-widest">
+          <div className="flex justify-between items-center text-micro text-muted/80">
             <span>Utilization</span>
             <span>{percentage.toFixed(1)}%</span>
           </div>
         </div>
       </div>
 
-      <div className={`absolute bottom-0 left-0 h-0.5 bg-accent/20 transition-all duration-500 ${isExceeded ? 'w-full bg-red-500/40' : 'w-0 group-hover:w-full'}`} />
+      <div className={`absolute bottom-0 left-0 h-0.5 bg-accent/20 transition-all duration-500 ${isExceeded ? 'w-full bg-white/[0.04]' : 'w-0 group-hover:w-full'}`} />
     </div>
   );
 }

@@ -102,7 +102,7 @@ async function seed() {
     }
   ];
 
-  const { error: logsError } = await supabaseAdmin.from("logs").insert(logs as any);
+  const { error: logsError } = await supabaseAdmin.from("logs").insert(logs);
 
   if (logsError) {
     console.error("❌ Logs seeding failed:", logsError);

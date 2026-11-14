@@ -1,3 +1,4 @@
+import { errorMessage } from "@/lib/errors";
 import { generateGeminiOutcome } from "./gemini";
 import { supabaseAdmin } from "./supabase";
 
@@ -65,9 +66,9 @@ export async function executeUnifiedModel(
       isFallback: false
     };
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     // Check if error is a candidate for fallback (429, 5xx, or timeout)
-    const errorMsg = err.message || "";
+    const errorMsg = errorMessage(err) || "";
     const isRetryable = errorMsg.includes("429") || errorMsg.includes("500") || errorMsg.includes("503") || errorMsg.includes("quota") || errorMsg.includes("limit");
 
     if (isRetryable && fallbackModel && fallbackModel !== primaryModel) {
@@ -88,8 +89,8 @@ export async function executeUnifiedModel(
           modelUsed: fallbackModel,
           isFallback: true
         };
-      } catch (fallbackErr: any) {
-        console.error(`❌ Models Hub: Fallback also failed: ${fallbackErr.message}`);
+      } catch (fallbackErr: unknown) {
+        console.error(`❌ Models Hub: Fallback also failed: ${errorMessage(fallbackErr)}`);
         throw fallbackErr;
       }
     }

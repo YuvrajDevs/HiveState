@@ -1,17 +1,17 @@
 "use client";
 
+import { errorMessage } from "@/lib/errors";
 import { useState, useEffect } from "react";
 import { 
   X, 
   Plus, 
   ShieldCheck, 
-  Activity, 
-  Database, 
-  Globe, 
+  
+  
+  
   Loader2, 
   ShieldAlert,
   Save,
-  Box
 } from "lucide-react";
 import { saveProvider, AIProvider } from "@/app/actions/providers";
 
@@ -68,8 +68,8 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
       } else {
         setError(result.error || "Failed to save provider.");
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(errorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -85,10 +85,10 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
               <Plus className="w-4 h-4 text-accent" />
             </div>
             <div>
-              <h2 className="text-sm font-bold uppercase tracking-widest">
-                {editingProvider ? "Edit Provider" : "Register Cluster"}
+              <h2 className="text-sm font-semibold">
+                {editingProvider ? "Edit provider" : "Add provider"}
               </h2>
-              <p className="text-xs text-muted/80 uppercase tracking-tighter mt-0.5">
+              <p className="text-xs text-muted/80 mt-0.5">
                 Add an AI provider endpoint and API key
               </p>
             </div>
@@ -104,36 +104,36 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1">Provider Engine</label>
+              <label className="text-micro font-semibold text-muted/80 px-1">Provider</label>
               <select 
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wider outline-none focus:ring-1 focus:ring-accent/50 transition-all cursor-pointer"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:ring-1 focus:ring-accent/50 transition-all cursor-pointer"
               >
                 <option value="gemini">Google Gemini</option>
                 <option value="openai">OpenAI (O-Series)</option>
                 <option value="anthropic">Anthropic (Claude)</option>
-                <option value="custom">Custom Proxy / Local</option>
+                <option value="custom">Custom proxy / local</option>
               </select>
             </div>
             
             <div className="space-y-2">
-              <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1">Identification Label</label>
+              <label className="text-micro font-semibold text-muted/80 px-1">Name</label>
               <input 
                 type="text"
                 placeholder="e.g. Primary Production"
                 value={formData.label}
                 onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs outline-none focus:ring-1 focus:ring-accent/50 transition-all placeholder:text-muted/85 font-bold uppercase tracking-wider"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs outline-none focus:ring-1 focus:ring-accent/50 transition-all placeholder:text-muted/85 font-semibold"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1 flex items-center justify-between">
+            <label className="text-micro font-semibold text-muted/80 px-1 flex items-center justify-between">
                API Credentials
-               <div className="flex items-center gap-1 text-[11px] text-accent/40 lowercase italic font-normal tracking-normal">
+               <div className="flex items-center gap-1 text-micro text-accent/40 lowercase italic font-normal tracking-normal">
                   <ShieldCheck className="w-2.5 h-2.5" /> End-to-end encrypted
                </div>
             </label>
@@ -149,7 +149,7 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
 
           {(formData.name === 'custom' || formData.name === 'openai') && (
             <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
-              <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1">Base Endpoint (Optional)</label>
+              <label className="text-micro font-semibold text-muted/80 px-1">Base Endpoint (Optional)</label>
               <input 
                 type="url"
                 placeholder="https://api.openai.com/v1"
@@ -162,7 +162,7 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[11px] font-bold text-muted/80 uppercase tracking-widest px-1">Rate Limit (RPM)</label>
+              <label className="text-micro font-semibold text-muted/80 px-1">Rate Limit (RPM)</label>
               <input 
                 type="number"
                 placeholder="Unlimited"
@@ -180,12 +180,12 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
                 onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
                 className="w-4 h-4 rounded border-white/10 bg-black/40 text-accent focus:ring-accent/50 transition-all"
               />
-              <label htmlFor="is_default" className="text-[11px] font-bold text-muted/85 uppercase tracking-widest cursor-pointer">Set as Primary</label>
+              <label htmlFor="is_default" className="text-micro font-semibold text-muted/85 cursor-pointer">Set as Primary</label>
             </div>
           </div>
 
           {error && (
-            <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs font-bold uppercase tracking-widest">
+            <div className="flex items-start gap-3 p-4 bg-white/[0.04] border border-white/10 rounded-xl text-danger text-xs font-semibold">
               <ShieldAlert className="w-4 h-4 shrink-0" />
               {error}
             </div>
@@ -195,17 +195,17 @@ export default function AddProviderForm({ editingProvider, onClose, onSuccess }:
             <button 
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 border border-white/5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-all"
+              className="flex-1 py-3 border border-white/5 rounded-xl text-xs font-semibold hover:bg-white/5 transition-all"
             >
               Cancel
             </button>
             <button 
               type="submit"
               disabled={loading}
-              className="flex-[2] py-3 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl text-xs tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg shadow-accent/20 disabled:opacity-50"
+              className="flex-[2] py-3 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              {editingProvider ? "Update Provider" : "Register Cluster"}
+              {editingProvider ? "Update provider" : "Add provider"}
             </button>
           </div>
         </form>

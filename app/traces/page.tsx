@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase";
-import { Terminal, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import TracesContent from "@/components/traces/TracesContent";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +22,7 @@ export default async function TracesPage() {
           workflow:workflows(id, name)
         ),
         run:runs(
+          status,
           workflow:workflows(id, name)
         )
       `)
@@ -38,9 +39,9 @@ export default async function TracesPage() {
 
   if (error) {
     return (
-      <div className="p-12 text-center brutalist-border bg-red-500/5">
-        <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-red-500">Trace Fetch Failed</h2>
+      <div className="p-12 text-center brutalist-border bg-white/[0.04]">
+        <AlertTriangle className="w-12 h-12 text-danger mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-danger">Could not load trace</h2>
         <p className="text-muted text-sm mt-2 font-mono-data">{error.message}</p>
       </div>
     );
@@ -50,30 +51,17 @@ export default async function TracesPage() {
     <div className="space-y-8 h-full flex flex-col">
       <header className="flex items-end justify-between border-b border-border pb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2 uppercase tracking-tighter">Execution Traces</h1>
+          <h1 className="text-3xl font-semibold tracking-tight mb-2">Traces</h1>
           <p className="text-muted text-sm max-w-lg italic opacity-70">
-            Visualizing real-time agent coordination logic and model outcomes. 
-            Ordered by reverse chronological sequence.
+            Every step of every run: what went in, what came out, and what it cost. 
+            Newest first.
           </p>
-        </div>
-        <div className="hidden md:flex text-xs font-mono-data bg-white/5 border border-border px-3 py-1 items-center gap-2 uppercase tracking-widest">
-          <Terminal className="w-3 h-3 text-accent" />
-          Live Instance: hive-trace-v1.0
         </div>
       </header>
 
       <TracesContent initialLogs={logs || []} workflows={workflows || []} />
 
-      {/* Footer Meta */}
-      <div className="flex items-center justify-between text-xs font-mono-data text-muted border-t border-border pt-4">
-        <div className="flex gap-4">
-          <span>Captured_Logs: {logs?.length || 0}</span>
-          <span>Status: SYNC_ESTABLISHED</span>
-        </div>
-        <div className="text-accent underline cursor-not-allowed uppercase tracking-widest font-bold">
-          Analytics_Cluster_Alpha
-        </div>
-      </div>
+      <p className="border-t border-border pt-4 text-xs text-muted">{logs?.length || 0} steps logged, newest first.</p>
     </div>
   );
 }

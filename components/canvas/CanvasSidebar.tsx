@@ -1,8 +1,16 @@
 "use client";
 
 import { X, Settings2, Code, Box } from "lucide-react";
+import type { Node } from "@xyflow/react";
+import type { AgentNodeData } from "@/types/domain";
 
-export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) {
+interface CanvasSidebarProps {
+  selectedNode: Node<AgentNodeData> | null;
+  onUpdate: (nodeId: string, data: Partial<AgentNodeData>) => void;
+  onClose: () => void;
+}
+
+export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: CanvasSidebarProps) {
   if (!selectedNode) return null;
 
   const handleChange = (field: string, value: string) => {
@@ -16,7 +24,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
           <div className="p-1.5 bg-accent/10 rounded-md">
             <Settings2 className="w-4 h-4" />
           </div>
-          <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] shadow-sm">Agent Spec</h3>
+          <h3 className="text-micro font-semibold shadow-sm">Agent</h3>
         </div>
         <button 
           onClick={onClose}
@@ -29,9 +37,9 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
         {/* Node Label */}
         <div className="space-y-2">
-          <label className="text-[11px] text-muted/85 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
+          <label className="text-micro text-muted/85 flex items-center gap-2 font-semibold px-1">
             <Box className="w-3 h-3" />
-            Node Identity
+            Node identity
           </label>
           <input
             type="text"
@@ -46,9 +54,9 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
           <>
             {/* Model Selection */}
             <div className="space-y-2">
-              <label className="text-[11px] text-muted/85 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
+              <label className="text-micro text-muted/85 flex items-center gap-2 font-semibold px-1">
                 <Settings2 className="w-3 h-3" />
-                Model Core
+                Model core
               </label>
               <div className="relative">
                 <select
@@ -67,7 +75,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
 
             {/* System Prompt */}
             <div className="space-y-2">
-              <label className="text-[11px] text-muted/85 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
+              <label className="text-micro text-muted/85 flex items-center gap-2 font-semibold px-1">
                 <Code className="w-3 h-3" />
                 Agent settings
               </label>
@@ -84,8 +92,8 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
             <div className="pt-4 border-t border-white/5">
               <label className="flex items-center justify-between cursor-pointer group">
                 <div className="space-y-1">
-                  <span className="text-xs font-bold uppercase tracking-widest text-foreground/80 group-hover:text-accent transition-colors">Manual Review</span>
-                  <p className="text-[11px] text-muted/80 uppercase tracking-tighter">Pause before this agent executes</p>
+                  <span className="text-xs font-semibold text-foreground/80 group-hover:text-accent transition-colors">Manual review</span>
+                  <p className="text-micro text-muted/80">Pause before this agent executes</p>
                 </div>
                 <input 
                   type="checkbox" 
@@ -100,9 +108,9 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
           <>
             {/* HITL Instructions */}
             <div className="space-y-2">
-              <label className="text-[11px] text-muted/85 flex items-center gap-2 uppercase tracking-[0.2em] font-bold px-1">
+              <label className="text-micro text-muted/85 flex items-center gap-2 font-semibold px-1">
                 <Code className="w-3 h-3" />
-                Review Instructions
+                Review instructions
               </label>
               <textarea
                 value={selectedNode.data.instructions || ""}
@@ -117,7 +125,7 @@ export default function CanvasSidebar({ selectedNode, onUpdate, onClose }: any) 
       </div>
 
 
-      <footer className="px-4 py-3 border-t border-white/5 bg-white/[0.02] italic text-[11px] text-muted/80 text-center tracking-[0.3em] font-mono-data">
+      <footer className="px-4 py-3 border-t border-white/5 bg-white/[0.02] italic text-micro text-muted/80 text-center font-mono-data">
         SYSTEM LAYER 3 // ENCRYPTED
       </footer>
     </aside>

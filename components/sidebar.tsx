@@ -19,7 +19,7 @@ const GROUPS: { label: string; items: Item[] }[] = [
   {
     label: "Monitor",
     items: [
-      { name: "Tasks", href: "/tasks", icon: Activity, badge: true },
+      { name: "Runs", href: "/tasks", icon: Activity, badge: true },
       { name: "Traces", href: "/traces", icon: ScrollText },
     ],
   },
@@ -61,7 +61,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
       {open && <div className="fixed inset-0 z-40 bg-black/60 md:hidden" onClick={onClose} aria-hidden />}
       <aside
         aria-label="Main navigation"
-        className={`fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r border-white/10 bg-[#101010] transition-transform md:static md:z-auto md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r border-white/10 bg-sidebar transition-transform md:static md:z-auto md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -80,7 +80,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
         <nav className="flex-1 space-y-5 overflow-y-auto p-3">
           {GROUPS.map((g) => (
             <div key={g.label}>
-              <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted">{g.label}</p>
+              <p className="mb-1.5 px-3 text-micro font-semibold text-muted">{g.label}</p>
               <ul className="space-y-0.5">
                 {g.items.map((item) => {
                   const active = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + "/");
@@ -91,15 +91,15 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
                         href={item.href}
                         aria-current={active ? "page" : undefined}
                         className={`group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                          active ? "bg-accent/15 text-white ring-1 ring-accent/30" : "text-neutral-400 hover:bg-white/5 hover:text-white"
+                          active ? "bg-accent/15 text-white ring-1 ring-accent/30" : "text-muted hover:bg-white/5 hover:text-white"
                         }`}
                       >
-                        <Icon className={`h-4 w-4 ${active ? "text-accent" : "text-neutral-500 group-hover:text-white"}`} />
+                        <Icon className={`h-4 w-4 ${active ? "text-accent" : "text-subtle group-hover:text-white"}`} />
                         <span className="flex-1">{item.name}</span>
                         {item.badge && count > 0 && (
                           <span
                             title={`${count} run${count === 1 ? "" : "s"} waiting for you`}
-                            className="min-w-5 rounded-full bg-yellow-500 px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-black"
+                            className="min-w-5 rounded-full bg-white/10 px-1.5 py-0.5 text-center text-micro font-bold leading-none text-foreground"
                           >
                             {count}
                           </span>
@@ -117,13 +117,13 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
           {health === null ? (
             <p className="text-xs text-muted">Checking setup…</p>
           ) : health.ready ? (
-            <p className="flex items-center gap-2 text-xs text-neutral-300">
-              <span className="h-2 w-2 rounded-full bg-green-500" /> Connected · database &amp; Gemini ready
+            <p className="flex items-center gap-2 text-xs text-foreground/80">
+              <span className="h-2 w-2 rounded-full bg-success" /> Connected · database &amp; Gemini ready
             </p>
           ) : (
-            <Link href="/settings" className="block rounded-md border border-yellow-500/30 bg-yellow-500/10 p-2.5 text-xs text-yellow-200 hover:bg-yellow-500/15">
+            <Link href="/settings" className="block rounded-md border border-white/10 bg-white/[0.04] p-2.5 text-xs text-warning hover:bg-white/[0.04]">
               <span className="font-semibold">Setup needed</span>
-              <span className="mt-0.5 block text-yellow-200/80">
+              <span className="mt-0.5 block text-warning/80">
                 {health.database !== "ok" ? "Can't reach the database. Check SUPABASE_URL and the service key." : "GEMINI_API_KEY is missing."}
               </span>
             </Link>

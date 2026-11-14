@@ -1,18 +1,62 @@
 @import "tailwindcss";
 
+/*
+ * HiveState design tokens. A quiet dark workbench: neutral charcoal layers, soft rounded tiles, one blue
+ * accent for action and selection, and state shown as small coloured dots, never as filled panels. Rules: docs/DESIGN_SYSTEM.md.
+ */
 @theme {
-  --color-background: #0e0e0e;
-  --color-surface: #141414;
-  --color-border: #222222;
-  --color-accent: #3b82f6;
-  --color-muted: #a3a3a3;
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* Surfaces, darkest to lightest */
+  --color-canvas: #151515;        /* workflow canvas and code wells */
+  --color-background: #181818;    /* page */
+  --color-sidebar: #1c1c1c;
+  --color-surface: #212121;       /* panels */
+  --color-surface-2: #2a2a2a;     /* cards on panels, hover, active rows */
+  --color-border: #2c2c2c;
+  --color-border-strong: #3a3a3a;
+
+  /* Text */
+  --color-foreground: #f0f0f0;    /* 16.5:1 on background */
+  --color-muted: #a3a3a3;         /* 7.7:1, secondary text */
+  --color-subtle: #8a8a8a;        /* 5.6:1, meta and hints */
+
+  /* Action and state */
+  --color-accent: #3b7bff;
+  --color-success: #4ade80;
+  --color-warning: #facc15;
+  --color-danger: #f87171;
+
+  /* Payload inspector: prompt, input and output are told apart at a glance */
+  --color-code-system: #88c0d0;
+  --color-code-input: #ebcb8b;
+  --color-code-output: #a3be8c;
+
+  /* Type scale: Tailwind's steps, with the two smallest raised so dense screens stay readable */
+  --text-micro: 12px; --text-micro--line-height: 16px;
+  --text-xs: 12.5px; --text-xs--line-height: 18px;
+  --text-body-sm: 13px; --text-body-sm--line-height: 20px;
+  --text-sm: 14px; --text-sm--line-height: 21px;
+
+  /* One letter-spacing for uppercase labels */
+  --tracking-label: 0.12em;
+
+  /* Soft geometry: every rounded-* utility picks these up */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
+  --radius-3xl: 22px;
 }
 
 :root {
-  --background: #0e0e0e;
-  --foreground: #ededed;
-  --accent: #3b82f6;
-  --accent-rgb: 59, 130, 246;
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
+  --accent: var(--color-accent);
+  --accent-rgb: 59, 123, 255;
 }
 
 body {
@@ -25,10 +69,8 @@ body {
 
 /* Modern SaaS Grid */
 .bg-grid {
-  background-size: 30px 30px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
 }
 
 .bg-grid-small {
@@ -40,18 +82,18 @@ body {
 
 /* Modern UI Components */
 .modern-border {
-  border: 1px solid #222222;
+  border: 1px solid var(--color-border);
 }
 
 .modern-card {
-  background: #141414;
-  border: 1px solid #222222;
-  border-radius: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
   transition: all 150ms ease;
 }
 
 .modern-card:hover {
-  border-color: #333333;
+  border-color: var(--color-border-strong);
   box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.5);
 }
 
@@ -74,38 +116,37 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #222222;
+  background: var(--color-border);
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #333333;
+  background: var(--color-border-strong);
 }
 
 /* Keep legacy classes for compatibility during transition */
 .brutalist-border, .modern-border {
-  border: 1px solid #222222;
+  border: 1px solid var(--color-border);
 }
 
 .brutalist-card, .modern-card {
-  background: #141414;
-  border: 1px solid #222222;
-  border-radius: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
   transition: all 150ms ease;
 }
 
 .modern-card:hover {
-  border-color: #333333;
+  border-color: var(--color-border-strong);
   box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.5);
 }
 
 /* React Flow Customizations */
 .react-flow__edge.selected .react-flow__edge-path {
-  stroke: #3b82f6 !important;
-  stroke-width: 3 !important;
-  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
+  stroke: var(--color-accent) !important;
+  stroke-width: 2.5 !important;
 }
 
 .react-flow__edge:hover .react-flow__edge-path {
-  stroke: rgba(59, 130, 246, 0.8) !important;
+  stroke: color-mix(in oklab, var(--color-accent) 80%, transparent) !important;
   cursor: pointer;
 }

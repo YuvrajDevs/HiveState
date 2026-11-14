@@ -1,3 +1,4 @@
+import { errorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
@@ -11,8 +12,8 @@ export async function GET() {
     if (error) throw error;
 
     return NextResponse.json({ workflows });
-  } catch (error: any) {
-    console.error("❌ API Error:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("❌ API Error:", errorMessage(error));
+    return NextResponse.json({ error: errorMessage(error) }, { status: 500 });
   }
 }

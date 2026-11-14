@@ -1,5 +1,6 @@
 "use server";
 
+import { errorMessage } from "@/lib/errors";
 import { supabaseAdmin } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 import { resumeWorkflow } from "@/lib/engine/runner";
@@ -23,9 +24,9 @@ export async function clearCompletedTasks() {
     revalidatePath("/tasks");
     revalidatePath("/");
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Unexpected error clearing tasks:", err);
-    return { success: false, error: err.message || "Internal server error" };
+    return { success: false, error: errorMessage(err) || "Internal server error" };
   }
 }
 
@@ -52,9 +53,9 @@ export async function stopTask(runId: string) {
     revalidatePath("/tasks/" + runId);
     revalidatePath("/");
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Unexpected error stopping task:", err);
-    return { success: false, error: err.message || "Internal server error" };
+    return { success: false, error: errorMessage(err) || "Internal server error" };
   }
 }
 
@@ -79,9 +80,9 @@ export async function stopAllTasks() {
     revalidatePath("/tasks");
     revalidatePath("/");
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Unexpected error stopping all tasks:", err);
-    return { success: false, error: err.message || "Internal server error" };
+    return { success: false, error: errorMessage(err) || "Internal server error" };
   }
 }
 
@@ -107,9 +108,9 @@ export async function resumeTask(runId: string, nodeId?: string, editedInput?: s
     revalidatePath("/tasks");
     revalidatePath("/tasks/" + runId);
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Error resuming task:", err);
-    return { success: false, error: err.message };
+    return { success: false, error: errorMessage(err) };
   }
 }
 
@@ -146,8 +147,8 @@ export async function approveTask(runId: string, nodeId: string, correctionNote?
       
     return resumeTask(runId);
 
-  } catch (err: any) {
-    return { success: false, error: err.message };
+  } catch (err: unknown) {
+    return { success: false, error: errorMessage(err) };
   }
 }
 
@@ -167,7 +168,7 @@ export async function rejectTask(runId: string, nodeId: string, correctionNote: 
     // After rejection, user can manually resume later or we can restart from this node 
     // with the correction injected into context.
     return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message };
+  } catch (err: unknown) {
+    return { success: false, error: errorMessage(err) };
   }
 }

@@ -1,5 +1,6 @@
 "use server";
 
+import { errorMessage } from "@/lib/errors";
 import { supabaseAdmin } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
@@ -30,7 +31,7 @@ export async function getProviders() {
       .order("created_at", { ascending: true });
 
     if (error) {
-      if (error.message.includes("API key")) {
+      if (errorMessage(error).includes("API key")) {
         throw new Error("Supabase Connection Error: Your SUPABASE_SERVICE_ROLE_KEY is invalid or mismatched. Check Vercel Environment Variables.");
       }
       throw error;
@@ -44,19 +45,19 @@ export async function getProviders() {
         api_key: maskKey(p.api_key),
       })),
     };
-  } catch (error: any) {
-    console.error("⛔ [ACTION] getProviders failed:", error.message);
+  } catch (error: unknown) {
+    console.error("⛔ [ACTION] getProviders failed:", errorMessage(error));
     return { 
       success: false, 
-      error: error.message,
-      isSupabaseError: error.message.includes("Supabase Connection Error")
+      error: errorMessage(error),
+      isSupabaseError: errorMessage(error).includes("Supabase Connection Error")
     };
   }
 }
 
 export async function saveProvider(provider: Partial<AIProvider>) {
   try {
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       ...provider,
       updated_at: new Date().toISOString(),
     };
@@ -87,9 +88,9 @@ export async function saveProvider(provider: Partial<AIProvider>) {
 
     revalidatePath("/settings");
     return { success: true, provider: data };
-  } catch (error: any) {
-    console.error("Error saving provider:", error.message);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    console.error("Error saving provider:", errorMessage(error));
+    return { success: false, error: errorMessage(error) };
   }
 }
 
@@ -104,9 +105,9 @@ export async function deleteProvider(id: string) {
 
     revalidatePath("/settings");
     return { success: true };
-  } catch (error: any) {
-    console.error("Error deleting provider:", error.message);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    console.error("Error deleting provider:", errorMessage(error));
+    return { success: false, error: errorMessage(error) };
   }
 }
 
@@ -127,9 +128,9 @@ export async function setDefaultProvider(id: string) {
 
     revalidatePath("/settings");
     return { success: true };
-  } catch (error: any) {
-    console.error("Error setting default provider:", error.message);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    console.error("Error setting default provider:", errorMessage(error));
+    return { success: false, error: errorMessage(error) };
   }
 }
 
@@ -144,8 +145,8 @@ export async function toggleProviderStatus(id: string, isActive: boolean) {
 
     revalidatePath("/settings");
     return { success: true };
-  } catch (error: any) {
-    console.error("Error toggling provider status:", error.message);
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    console.error("Error toggling provider status:", errorMessage(error));
+    return { success: false, error: errorMessage(error) };
   }
 }

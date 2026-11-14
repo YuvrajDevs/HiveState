@@ -43,6 +43,8 @@ npm install
 npm run dev
 ```
 
+The interface follows a documented design system: tokens, type, status vocabulary and patterns in [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md).
+
 ## 🏗 Architecture
 HiveState separates the **Orchestration Logic** from the **Execution Layer**:
 1. **Workflows**: Visual or code-defined blueprints of agent connections.

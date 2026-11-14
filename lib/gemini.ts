@@ -1,10 +1,18 @@
+import { errorMessage } from "@/lib/errors";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error("Missing env.GEMINI_API_KEY. Please add it to your .env.local");
+/**
+ * The client is created on first use, not at import: a missing key should fail the run that needs it,
+ * with a clear message, instead of taking down every page whose server actions import the engine.
+ */
+let client: GoogleGenerativeAI | null = null;
+function gemini(): GoogleGenerativeAI {
+  if (client) return client;
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("Missing env.GEMINI_API_KEY. Please add it to your .env.local");
+  client = new GoogleGenerativeAI(key);
+  return client;
 }
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 /**
  * Optimized for low-latency agent execution.
@@ -16,7 +24,7 @@ export async function generateGeminiOutcome(
   modelName: string = "gemini-2.5-flash",
   retries: number = 3
 ) {
-  const model = genAI.getGenerativeModel({
+  const model = gemini().getGenerativeModel({
     model: modelName,
     systemInstruction: systemPrompt,
   });
@@ -30,8 +38,8 @@ export async function generateGeminiOutcome(
         text: response.text(),
         usageMetadata: response.usageMetadata
       };
-    } catch (err: any) {
-      const errorMsg = err.message || "";
+    } catch (err: unknown) {
+      const errorMsg = errorMessage(err) || "";
       const isRetryable = errorMsg.includes("503") || errorMsg.includes("429") || errorMsg.includes("overloaded") || errorMsg.includes("high demand");
       
       if (isRetryable && attempt < retries) {

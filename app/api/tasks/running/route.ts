@@ -1,3 +1,5 @@
+import { one, type Log, type Related, type Workflow } from "@/types/domain";
+import { errorMessage } from "@/lib/errors";
 import { supabaseAdmin } from "@/lib/supabase";
 import { NextResponse } from "next/server";
 
@@ -49,8 +51,8 @@ export async function GET() {
         .select("run_id")
         .in("run_id", runningRunIds);
       
-      logCounts = (logs || []).reduce((acc: any, log: any) => {
-        acc[log.run_id] = (acc[log.run_id] || 0) + 1;
+      logCounts = (logs || []).reduce((acc: Record<string, number>, log: Pick<Log, "run_id">) => {
+        if (log.run_id) acc[log.run_id] = (acc[log.run_id] || 0) + 1;
         return acc;
       }, {});
     }
@@ -63,7 +65,7 @@ export async function GET() {
       .in("id", workflowIds);
 
     const canvasMap: Record<string, number> = {};
-    (workflows || []).forEach((w: any) => {
+    (workflows || []).forEach((w: Pick<Workflow, "id" | "canvas_json">) => {
       const canvas = typeof w.canvas_json === 'string' ? JSON.parse(w.canvas_json) : (w.canvas_json || {});
       canvasMap[w.id] = canvas.nodes?.length || 0;
     });
@@ -78,12 +80,12 @@ export async function GET() {
       tasks,
       alerts: failedRuns?.map(f => ({
         id: f.id,
-        message: `Task Fail: ${(f.workflow as any)?.name || 'Unknown'} - ${f.error || 'Engine Interrupted'}`
+        message: `Task Fail: ${one(f.workflow as Related<Pick<Workflow, "name">>)?.name || 'Unknown'} - ${f.error || 'Engine Interrupted'}`
       })) || []
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Monitoring API error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
   }
 }

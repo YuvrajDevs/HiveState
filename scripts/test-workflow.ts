@@ -63,15 +63,16 @@ async function seedAndTestGemini() {
 
     console.log("\n📊 Trace Observability Report:");
     logs?.forEach((log, i) => {
-      console.log(`[Step ${i+1}] [${(log.agent as any)?.name}] Status: ${log.status}`);
+      console.log(`[Step ${i+1}] [${(log.agent as { name?: string } | null)?.name}] Status: ${log.status}`);
       console.log(`Result: ${log.output.trim().substring(0, 150)}...`);
     });
 
     console.log("\n🔗 View this trace in the Dashboard under /traces");
 
-  } catch (error: any) {
-    console.error("\n❌ Test Failed:", error.message);
-    if (error.message.includes("403") || error.message.includes("404")) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("\n❌ Test Failed:", message);
+    if (message.includes("403") || message.includes("404")) {
       console.log("💡 Tip: Check your SUPABASE_SERVICE_ROLE_KEY and verify the schema migration was applied.");
     }
   }

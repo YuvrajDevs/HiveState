@@ -1,5 +1,6 @@
 "use server";
 
+import { errorMessage } from "@/lib/errors";
 import { supabaseAdmin } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
@@ -29,8 +30,8 @@ export async function saveApiKey(provider: string, key: string) {
 
     revalidatePath("/settings");
     return { success: true };
-  } catch (error: any) {
-    console.error("Error saving API key:", error.message);
-    return { error: error.message };
+  } catch (error: unknown) {
+    console.error("Error saving API key:", errorMessage(error));
+    return { error: errorMessage(error) };
   }
 }

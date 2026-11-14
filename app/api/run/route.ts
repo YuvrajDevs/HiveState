@@ -1,3 +1,4 @@
+import { errorMessage } from "@/lib/errors";
 import { NextRequest, NextResponse } from "next/server";
 import { runWorkflow } from "@/lib/engine/runner";
 
@@ -14,10 +15,10 @@ export async function POST(req: NextRequest) {
 
     const result = await runWorkflow(workflowId, input);
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("API Run Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to run workflow" },
+      { error: errorMessage(error) || "Failed to run workflow" },
       { status: 500 }
     );
   }

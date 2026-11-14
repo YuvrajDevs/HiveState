@@ -1,24 +1,25 @@
 "use client";
+import type { Workflow } from "@/types/domain";
 
+import { errorMessage } from "@/lib/errors";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { 
   Play, 
   Loader2, 
-  ChevronRight, 
-  Settings2, 
+  
+  
   Zap, 
   BookOpen, 
   Cpu,
   ArrowLeft,
-  Activity,
+  
   CheckCircle2,
   AlertTriangle,
   ExternalLink,
   Upload,
   FileText,
   X,
-  FileJson
 } from "lucide-react";
 import Link from "next/link";
 
@@ -39,7 +40,7 @@ function RunContent() {
   const router = useRouter();
   const initialId = searchParams.get("id");
 
-  const [workflows, setWorkflows] = useState<any[]>([]);
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [selectedId, setSelectedId] = useState(initialId || "");
   const [input, setInput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
@@ -60,7 +61,7 @@ function RunContent() {
         const allWorkflows = data.workflows || [];
         // Only show my workflows (no templates directly unless user specifically wants them, 
         // but typically user clones a template first. Using is_template check.)
-        const myWorkflows = allWorkflows.filter((w: any) => !w.is_template);
+        const myWorkflows = allWorkflows.filter((w: Workflow) => !w.is_template);
         setWorkflows(myWorkflows);
         
         if (!selectedId && myWorkflows.length > 0) {
@@ -97,8 +98,8 @@ function RunContent() {
       setInput(data.text);
       setUploadedFile({ name: file.name, size: file.size });
       setUseFileAsInput(true);
-    } catch (err: any) {
-      setError(`File parse failed: ${err.message}`);
+    } catch (err: unknown) {
+      setError(`File parse failed: ${errorMessage(err)}`);
     } finally {
       setIsUploading(false);
     }
@@ -135,8 +136,8 @@ function RunContent() {
       if (data.runId) {
         router.push(`/workflows/${selectedId}?runId=${data.runId}`);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(errorMessage(err));
       setIsRunning(false);
       setStatus("failed");
     }
@@ -150,7 +151,6 @@ function RunContent() {
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  const selectedWorkflow = workflows.find(w => w.id === selectedId);
 
   return (
     <div className="max-w-2xl mx-auto py-10 px-4 space-y-10">
@@ -160,7 +160,7 @@ function RunContent() {
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight uppercase tracking-[0.1em]">Run a workflow</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Run a workflow</h1>
             <p className="text-muted/85 text-xs mt-1">Pick a workflow, give it some input, and start. Tip: press Ctrl/⌘ + Enter to run.</p>
           </div>
         </div>
@@ -175,7 +175,7 @@ function RunContent() {
         <div className="space-y-4 relative z-10">
 
           <div className="space-y-2">
-            <label className="text-[11px] font-bold text-muted/80 uppercase tracking-[0.2em] px-1">Selected Workflow</label>
+            <label className="text-micro font-semibold text-muted/80 px-1">Workflow</label>
             <div className="grid grid-cols-1 gap-2">
               <select 
                 value={selectedId}
@@ -185,11 +185,11 @@ function RunContent() {
               >
                 <option value="" disabled>--- SELECT CLUSTER ---</option>
                 {loading ? (
-                  <option disabled>Loading clusters...</option>
+                  <option disabled>Loading workflows…</option>
                 ) : workflows.length === 0 ? (
                   <option disabled>No workflows found</option>
                 ) : (
-                  workflows.map((w: any) => (
+                  workflows.map((w) => (
                     <option key={w.id} value={w.id}>
                       {w.name} {w.is_template ? "(Template)" : ""}
                     </option>
@@ -201,9 +201,9 @@ function RunContent() {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
-              <label className="text-[11px] font-bold text-muted/80 uppercase tracking-[0.2em]">Initial Input Context</label>
+              <label className="text-micro font-semibold text-muted/80">Input</label>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] text-muted/80 font-mono-data uppercase">Markdown Supported</span>
+                <span className="text-micro text-muted/80">Markdown supported</span>
               </div>
             </div>
 
@@ -226,8 +226,8 @@ function RunContent() {
                     )}
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-foreground/80 uppercase tracking-wider mb-0.5">Attach Source Code or Data</h4>
-                    <p className="text-[11px] text-muted/80 uppercase tracking-widest font-mono-data">Supports PDF, Markdown, Plain Text</p>
+                    <h4 className="text-xs font-semibold text-foreground/80 mb-0.5">Attach Source Code or Data</h4>
+                    <p className="text-micro text-muted/80">Supports PDF, Markdown, Plain Text</p>
                   </div>
                 </div>
               </label>
@@ -238,8 +238,8 @@ function RunContent() {
                     <FileText className="w-4 h-4 text-accent" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-accent uppercase tracking-wider line-clamp-1">{uploadedFile.name}</h4>
-                    <p className="text-[11px] text-accent/50 uppercase tracking-widest font-mono-data">{(uploadedFile.size / 1024).toFixed(1)} KB • Content Parsed</p>
+                    <h4 className="text-xs font-semibold text-accent line-clamp-1">{uploadedFile.name}</h4>
+                    <p className="text-micro text-accent/50">{(uploadedFile.size / 1024).toFixed(1)} KB • Content Parsed</p>
                   </div>
                 </div>
                 <button 
@@ -262,23 +262,23 @@ function RunContent() {
               {useFileAsInput && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[1px] rounded-xl pointer-events-none">
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-accent/20 border border-accent/40 rounded-full">
-                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                    <span className="text-[11px] font-bold text-accent uppercase tracking-widest">Using Document Content</span>
+                    <div className="w-2 h-2 rounded-full bg-accent" />
+                    <span className="text-micro font-semibold text-accent">Using document content</span>
                   </div>
                 </div>
               )}
             </div>
             
             <div className="px-1 flex items-center gap-2">
-              <Zap className="w-3 h-3 text-yellow-500/40" />
-              <span className="text-[11px] text-muted/80 uppercase font-mono-data tracking-[0.1em]">Input will be processed as the primary workflow context head.</span>
+              <Zap className="w-3 h-3 text-warning/40" />
+              <span className="text-micro text-muted/80">Input will be processed as the primary workflow context head.</span>
             </div>
           </div>
 
           <button
             onClick={handleRun}
             disabled={isRunning || !selectedId || !input}
-            className="w-full bg-accent text-white py-4 rounded-xl font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-accent/20 transition-all group disabled:opacity-30"
+            className="w-full bg-accent text-white py-4 rounded-xl font-semibold text-xs flex items-center justify-center gap-3 hover:shadow-lg transition-all group disabled:opacity-30"
           >
             {isRunning ? (
               <>
@@ -301,8 +301,8 @@ function RunContent() {
           {status !== "idle" && (
             <div className={`mt-6 p-4 rounded-xl border animate-in fade-in slide-in-from-top-2 duration-300 ${
               status === "started" ? "bg-accent/5 border-accent/20 text-accent" :
-              status === "completed" ? "bg-green-500/5 border-green-500/20 text-green-500" :
-              "bg-red-500/5 border-red-500/20 text-red-500"
+              status === "completed" ? "bg-white/[0.04] border-white/10 text-success" :
+              "bg-white/[0.04] border-white/10 text-danger"
             }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -310,26 +310,26 @@ function RunContent() {
                   {status === "completed" && <CheckCircle2 className="w-4 h-4" />}
                   {status === "failed" && <AlertTriangle className="w-4 h-4" />}
                   
-                  <span className="text-xs font-bold uppercase tracking-wider">
-                    {status === "started" && "Execution Started"}
-                    {status === "completed" && "Execution Completed"}
-                    {status === "failed" && "Execution Failed"}
+                  <span className="text-xs font-semibold">
+                    {status === "started" && "Run started"}
+                    {status === "completed" && "Run completed"}
+                    {status === "failed" && "Run failed"}
                   </span>
                 </div>
                 
                 {status === "completed" && (
                   <Link 
                     href="/traces"
-                    className="flex items-center gap-1.5 text-xs font-bold py-1.5 px-3 bg-green-500/10 hover:bg-green-500/20 rounded-lg transition-all"
+                    className="flex items-center gap-1.5 text-xs font-bold py-1.5 px-3 bg-white/[0.04] hover:bg-white/[0.04] rounded-lg transition-all"
                   >
-                    View Traces <ExternalLink className="w-3 h-3" />
+                    View traces <ExternalLink className="w-3 h-3" />
                   </Link>
                 )}
               </div>
               
               {(error || status === "failed") && (
                 <p className="mt-2 text-xs opacity-70 font-mono-data">
-                  {error || "An unexpected error occurred during execution sequence."}
+                  {error || "The run failed. Check the trace for the step that broke."}
                 </p>
               )}
             </div>
@@ -344,8 +344,8 @@ function RunContent() {
             <Cpu className="w-4 h-4 text-accent" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-foreground/80 uppercase tracking-wider mb-1">Compute Logic</h4>
-            <p className="text-[11px] text-muted/80 leading-relaxed">Each agent uses the Gemini model set on its node. Total time is the sum of every agent step.</p>
+            <h4 className="text-xs font-semibold text-foreground/80 mb-1">How it runs</h4>
+            <p className="text-micro text-muted/80 leading-relaxed">Each agent uses the Gemini model set on its node. Total time is the sum of every agent step.</p>
           </div>
         </div>
         <div className="modern-card p-4 border-none bg-white/[0.02] rounded-xl flex items-start gap-4">
@@ -353,8 +353,8 @@ function RunContent() {
             <BookOpen className="w-4 h-4 text-accent" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-foreground/80 uppercase tracking-wider mb-1">Persistent Logs</h4>
-            <p className="text-[11px] text-muted/80 leading-relaxed">Full execution traces are available immediately in the Traces directory after start.</p>
+            <h4 className="text-xs font-semibold text-foreground/80 mb-1">Every step logged</h4>
+            <p className="text-micro text-muted/80 leading-relaxed">Full execution traces are available immediately in the Traces directory after start.</p>
           </div>
         </div>
       </footer>

@@ -1,9 +1,10 @@
 "use client";
 
-import { Handle, Position } from "@xyflow/react";
+import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
+import type { CanvasNodeData } from "@/types/domain";
 import { Terminal, Cpu, Eye, Code, CheckCircle2, AlertOctagon, Loader2, Zap, AlertTriangle, Layers } from "lucide-react";
 
-export default function AgentNode({ data, selected }: any) {
+export default function AgentNode({ data, selected }: NodeProps<Node<CanvasNodeData>>) {
   const isRunning = data.status === "running" || data.status === "resumed";
   const isSuccess = data.status === "success";
   const isFailed = data.status === "failed";
@@ -13,11 +14,11 @@ export default function AgentNode({ data, selected }: any) {
 
   return (
     <div className={`modern-card w-[280px] transition-all duration-500 overflow-hidden rounded-xl border group ${
-      isCircuitBreaker ? "ring-4 ring-red-500 shadow-[0_0_50px_rgba(239,68,68,0.4)] border-red-500 animate-pulse-slow bg-red-950/20" :
-      isRunning ? "ring-2 ring-accent shadow-[0_0_30px_rgba(59,130,246,0.3)] border-accent animate-pulse" :
-      isSuccess ? "border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.1)]" :
-      isFailed ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.1)]" :
-      selected ? "ring-2 ring-accent/50 border-accent/50 shadow-[0_0_20px_rgba(59,130,246,0.15)]" : 
+      isCircuitBreaker ? "ring-4 ring-danger shadow-[0_0_50px_rgba(239,68,68,0.4)] border-danger animate-pulse-slow bg-danger/20" :
+      isRunning ? "ring-2 ring-accent border-accent" :
+      isSuccess ? "border-success/50 shadow-[0_0_20px_rgba(34,197,94,0.1)]" :
+      isFailed ? "border-danger/50 shadow-[0_0_20px_rgba(239,68,68,0.1)]" :
+      selected ? "ring-2 ring-accent/50 border-accent/50" : 
       "border-white/5 shadow-xl"
     }`}>
       {/* Input Handle */}
@@ -25,33 +26,33 @@ export default function AgentNode({ data, selected }: any) {
 
       {/* Node Header */}
       <div className={`px-3 py-2 flex items-center justify-between border-b transition-colors duration-500 ${
-        isCircuitBreaker ? "bg-red-500/20 border-red-500/30" :
-        isSuccess ? "bg-green-500/5 border-green-500/10" :
-        isFailed ? "bg-red-500/5 border-red-500/10" :
+        isCircuitBreaker ? "bg-white/[0.04] border-white/10" :
+        isSuccess ? "bg-white/[0.04] border-white/10" :
+        isFailed ? "bg-white/[0.04] border-white/10" :
         isRunning ? "bg-accent/5 border-accent/10" :
         "bg-white/[0.03] border-white/5"
       }`}>
         <div className="flex items-center gap-2">
           <div className={`p-1 rounded-md transition-colors ${
-            isCircuitBreaker ? "bg-red-500 text-white animate-bounce-subtle" :
-            isSuccess ? "bg-green-500/20" :
-            isFailed ? "bg-red-500/20" :
+            isCircuitBreaker ? "bg-danger text-white animate-bounce-subtle" :
+            isSuccess ? "bg-white/[0.04]" :
+            isFailed ? "bg-white/[0.04]" :
             isRunning ? "bg-accent/20" :
             "bg-accent/10"
           }`}>
-            {isCircuitBreaker ? <AlertTriangle className="w-3 h-3" /> : isRunning ? <Loader2 className="w-3 h-3 text-accent animate-spin" /> : <Cpu className={`w-3 h-3 ${isSuccess ? "text-green-500" : isFailed ? "text-red-500" : "text-accent"}`} />}
+            {isCircuitBreaker ? <AlertTriangle className="w-3 h-3" /> : isRunning ? <Loader2 className="w-3 h-3 text-accent animate-spin" /> : <Cpu className={`w-3 h-3 ${isSuccess ? "text-success" : isFailed ? "text-danger" : "text-accent"}`} />}
           </div>
-          <span className="text-xs font-bold uppercase tracking-wider truncate max-w-[120px] text-foreground/90">
-            {data.label || "New Agent"}
+          <span className="text-xs font-semibold truncate max-w-[120px] text-foreground/90">
+            {data.label || "New agent"}
           </span>
         </div>
         
-        <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded-full border text-[11px] font-bold uppercase tracking-widest transition-all ${
-          isCircuitBreaker ? "bg-red-500 text-white border-red-400 animate-pulse" :
-          isSuccess ? "bg-green-500/20 text-green-500 border-green-500/30" :
-          isFailed ? "bg-red-500/20 text-red-500 border-red-500/30" :
+        <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded-full border text-micro font-semibold transition-all ${
+          isCircuitBreaker ? "bg-danger text-white border-danger" :
+          isSuccess ? "bg-white/[0.04] text-success border-white/10" :
+          isFailed ? "bg-white/[0.04] text-danger border-white/10" :
           isRunning ? "bg-accent/20 text-accent border-accent/30" :
-          isPaused ? "bg-yellow-500/20 text-yellow-500 border-yellow-500/30" :
+          isPaused ? "bg-white/[0.04] text-warning border-white/10" :
           "bg-white/5 text-muted/80 border-white/5"
         }`}>
           {isCircuitBreaker && <AlertTriangle className="w-2 h-2" />}
@@ -62,19 +63,19 @@ export default function AgentNode({ data, selected }: any) {
       </div>
 
       {/* Node Body */}
-      <div className="p-4 space-y-3 bg-[#0c0c0c]/50 relative">
+      <div className="p-4 space-y-3 bg-canvas/50 relative">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 opacity-50 px-2 py-1 bg-white/5 rounded-md w-fit">
             <Terminal className="w-2.5 h-2.5" />
-            <span className="text-[11px] font-mono-data uppercase tracking-widest text-foreground">
+            <span className="text-micro text-foreground">
               {data.model || "gemini-2.5-flash"}
             </span>
           </div>
 
           {isMultiInput && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/10 border border-accent/20 rounded-md animate-pulse">
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/10 border border-accent/20 rounded-md">
               <Layers className="w-2.5 h-2.5 text-accent" />
-              <span className="text-[11px] font-bold text-accent uppercase tracking-tighter">Multi-Input</span>
+              <span className="text-micro font-semibold text-accent">Multi-Input</span>
             </div>
           )}
 
@@ -87,7 +88,7 @@ export default function AgentNode({ data, selected }: any) {
                   data.onInspect?.('input');
                 }}
                 className="p-1 hover:bg-accent/20 rounded text-muted hover:text-accent transition-colors"
-                title="View Input"
+                title="View input"
               >
                 <Code className="w-3 h-3" />
               </button>
@@ -96,8 +97,8 @@ export default function AgentNode({ data, selected }: any) {
                   e.stopPropagation();
                   data.onInspect?.('output');
                 }}
-                className="p-1 hover:bg-green-500/20 rounded text-muted hover:text-green-500 transition-colors"
-                title="View Output"
+                className="p-1 hover:bg-white/[0.04] rounded text-muted hover:text-success transition-colors"
+                title="View output"
               >
                 <Eye className="w-3 h-3" />
               </button>
@@ -110,35 +111,35 @@ export default function AgentNode({ data, selected }: any) {
         </p>
 
         {isFailed && (
-          <div className="pt-2 border-t border-red-500/10 space-y-2">
+          <div className="pt-2 border-t border-white/10 space-y-2">
             <button 
-              className="w-full py-1.5 rounded-md bg-accent/20 text-accent text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-accent/30 transition-all border border-accent/30 flex items-center justify-center gap-2 group/retry"
+              className="w-full py-1.5 rounded-md bg-accent/20 text-accent text-micro font-semibold hover:bg-accent/30 transition-all border border-accent/30 flex items-center justify-center gap-2 group/retry"
               onClick={(e) => {
                 e.stopPropagation();
                 data.onRetry?.();
               }}
             >
               <Zap className="w-2.5 h-2.5 fill-current" />
-              Retry Step
+              Retry step
             </button>
             <button 
-              className="w-full py-1.5 rounded-md bg-red-500/10 text-red-500 text-[11px] font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all border border-red-500/20"
+              className="w-full py-1.5 rounded-md bg-white/[0.04] text-danger text-micro font-semibold hover:bg-white/[0.04] transition-all border border-white/10"
               onClick={(e) => {
                 e.stopPropagation();
                 window.location.href = `/tasks/${data.runId}`;
               }}
             >
-              Debug Timeline
+              Debug timeline
             </button>
           </div>
         )}
 
         {isPaused && (
-           <div className="pt-2 border-t border-yellow-500/10 space-y-2">
-              <div className="text-[11px] font-bold text-yellow-500/60 uppercase tracking-widest text-center mb-2">Manual Intervention Required</div>
+           <div className="pt-2 border-t border-white/10 space-y-2">
+              <div className="text-micro font-semibold text-warning/60 text-center mb-2">Waiting for you</div>
               <div className="flex gap-2">
                 <button 
-                  className="flex-1 py-1.5 rounded-md bg-green-500/10 text-green-500 text-[11px] font-bold uppercase tracking-widest hover:bg-green-500/20 transition-all border border-green-500/20"
+                  className="flex-1 py-1.5 rounded-md bg-white/[0.04] text-success text-micro font-semibold hover:bg-white/[0.04] transition-all border border-white/10"
                   onClick={(e) => {
                     e.stopPropagation();
                     window.location.href = `/tasks/${data.runId}`;
@@ -147,7 +148,7 @@ export default function AgentNode({ data, selected }: any) {
                   Approve
                 </button>
                 <button 
-                  className="flex-1 py-1.5 rounded-md bg-red-500/10 text-red-500 text-[11px] font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all border border-red-500/20"
+                  className="flex-1 py-1.5 rounded-md bg-white/[0.04] text-danger text-micro font-semibold hover:bg-white/[0.04] transition-all border border-white/10"
                   onClick={(e) => {
                     e.stopPropagation();
                     window.location.href = `/tasks/${data.runId}`;
@@ -162,8 +163,8 @@ export default function AgentNode({ data, selected }: any) {
 
       {/* Output Handle */}
       <Handle type="source" position={Position.Bottom} className={`!w-2 !h-2 !border-none !rounded-full transition-all duration-500 ${
-        isSuccess ? "!bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]" :
-        isRunning ? "!bg-accent shadow-[0_0_10px_rgba(59,130,246,0.6)] animate-ping" :
+        isSuccess ? "!bg-success shadow-[0_0_10px_rgba(34,197,94,0.6)]" :
+        isRunning ? "!bg-accent" :
         "!bg-accent/40"
       }`} />
     </div>

@@ -1,3 +1,4 @@
+import type { CanvasNode } from "../types/domain";
 import { supabaseAdmin } from "../lib/supabase";
 
 async function fixTemplates() {
@@ -22,7 +23,7 @@ async function fixTemplates() {
     }
 
     if (canvas && canvas.nodes) {
-      const updatedNodes = canvas.nodes.map((node: any) => ({
+      const updatedNodes = canvas.nodes.map((node: CanvasNode) => ({
         ...node,
         type: node.type === "agent" ? "AgentNode" : (node.type === "human" ? "HITLNode" : node.type)
       }));

@@ -1,5 +1,6 @@
 "use server";
 
+import { errorMessage } from "@/lib/errors";
 import { resumeWorkflow } from "@/lib/engine/runner";
 import { revalidatePath } from "next/cache";
 
@@ -18,8 +19,8 @@ export async function resumeWorkflowAction(runId: string, nodeId?: string, edite
     
     revalidatePath(`/tasks/${runId}`);
     return { success: true, result };
-  } catch (error: any) {
-    console.error("[ACTION ERROR] resumeWorkflowAction:", error.message);
-    return { error: error.message };
+  } catch (error: unknown) {
+    console.error("[ACTION ERROR] resumeWorkflowAction:", errorMessage(error));
+    return { error: errorMessage(error) };
   }
 }

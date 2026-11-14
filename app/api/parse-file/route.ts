@@ -1,3 +1,4 @@
+import { errorMessage } from "@/lib/errors";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -35,8 +36,8 @@ export async function POST(req: NextRequest) {
       fileSize: file.size,
       preview: text.substring(0, 500) + (text.length > 500 ? "..." : "")
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("File parsing error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: errorMessage(error) }, { status: 500 });
   }
 }

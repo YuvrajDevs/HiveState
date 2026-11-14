@@ -1,9 +1,9 @@
-const { createClient } = require("@supabase/supabase-js");
-const dotenv = require("dotenv");
-const path = require("path");
+import { createClient } from "@supabase/supabase-js";
+import dotenv from "dotenv";
+import path from "node:path";
 
 // Load .env.local
-dotenv.config({ path: path.resolve(__dirname, "../.env.local") });
+dotenv.config({ path: path.resolve(import.meta.dirname, "../.env.local") });
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -34,7 +34,7 @@ async function fixAllNodes() {
     if (typeof canvas === 'string') {
       try {
         canvas = JSON.parse(canvas);
-      } catch (e) {
+      } catch {
         console.warn(`⚠️ Skipping "${workflow.name}" (Invalid JSON)`);
         continue;
       }

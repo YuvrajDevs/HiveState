@@ -1,16 +1,19 @@
 "use client";
+import { one, type Log, type Workflow } from "@/types/domain";
+import { STATUS_TONE as TONE, logLabel, runLabel } from "@/lib/status";
 
 import { useState, useMemo } from "react";
-import { Terminal, AlertTriangle, CheckCircle2, Maximize2, Filter, Layers, Clock, ChevronDown, ChevronRight, Activity } from "lucide-react";
+import { Terminal, AlertTriangle, CheckCircle2, Maximize2, Filter, Layers, ChevronDown, ChevronRight } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { useRouter } from "next/navigation";
+
 
 export default function TracesContent({ 
   initialLogs, 
   workflows 
 }: { 
-  initialLogs: any[],
-  workflows: any[]
+  initialLogs: Log[],
+  workflows: Pick<Workflow, "id" | "name">[]
 }) {
   const router = useRouter();
   const [filterWorkflowId, setFilterWorkflowId] = useState<string>("all");
@@ -24,7 +27,7 @@ export default function TracesContent({
   };
 
   const groupedLogs = useMemo(() => {
-    const groups: Record<string, any[]> = {};
+    const groups: Record<string, Log[]> = {};
     
     // Group logs by run ID
     initialLogs.forEach(log => {
@@ -41,9 +44,10 @@ export default function TracesContent({
       const logs = groupedLogs[runId];
       // Get the earliest log for this run's basic info
       const earliestLog = [...logs].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())[0];
-      const name = earliestLog.run?.workflow?.name || earliestLog.agent?.workflow?.name || "Deleted workflow";
+      const name = one(one(earliestLog.run)?.workflow)?.name || one(one(earliestLog.agent)?.workflow)?.name || "Deleted workflow";
       const timestamp = earliestLog.created_at;
-      const status = logs.some(l => l.status === "failed") ? "failed" : "success";
+      // The run's own status, not a guess from its steps: a paused or running run is not a success
+      const status = runLabel(one(earliestLog.run)?.status, logs.some((l) => l.status === "failed"));
       
       return { runId, name, logs, timestamp, status };
     }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
@@ -54,7 +58,7 @@ export default function TracesContent({
     if (filterWorkflowId === "all") return runList;
     return runList.filter(run => {
       const firstLog = run.logs[0];
-      const wId = firstLog.run?.workflow?.id || firstLog.agent?.workflow?.id;
+      const wId = one(one(firstLog.run)?.workflow)?.id || one(one(firstLog.agent)?.workflow)?.id;
       return wId === filterWorkflowId;
     });
   }, [runList, filterWorkflowId]);
@@ -64,25 +68,22 @@ export default function TracesContent({
       {/* Filter & Control Bar */}
       <div className="flex items-center justify-between bg-white/[0.02] border border-white/5 p-3 rounded-xl">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-muted/80 uppercase tracking-widest px-2">
+          <div className="flex items-center gap-2 text-xs font-semibold text-muted/80 px-2">
             <Filter className="w-3.5 h-3.5" />
-            Deployment Search
+            Filter
           </div>
           <select 
             value={filterWorkflowId}
             onChange={(e) => setFilterWorkflowId(e.target.value)}
-            className="bg-black/40 border border-white/10 text-xs px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-accent/50 transition-all cursor-pointer uppercase font-bold tracking-wider"
+            className="bg-black/40 border border-white/10 text-xs px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-accent/50 transition-all cursor-pointer font-semibold"
           >
-            <option value="all">ALL SESSSIONS</option>
+            <option value="all">All workflows</option>
             {workflows.map(w => (
               <option key={w.id} value={w.id}>{w.name}</option>
             ))}
           </select>
         </div>
         
-        <div className="flex items-center gap-2 px-4 text-[11px] font-mono-data text-muted/80 uppercase tracking-[0.2em]">
-          <Activity className="w-3 h-3 text-accent" /> SessionBased_Telemetry_Active
-        </div>
       </div>
 
       {filteredRuns.length > 0 ? (
@@ -101,26 +102,26 @@ export default function TracesContent({
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg border flex items-center justify-center ${
-                      run.status === "success" ? "bg-green-500/10 border-green-500/20 text-green-500" : "bg-red-500/10 border-red-500/20 text-red-500"
+                      TONE[run.status.tone].box
                     }`}>
                       <Layers className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="flex items-center gap-3">
-                        <h3 className="text-sm font-bold uppercase tracking-tight text-foreground/80">{run.name}</h3>
-                        <span className={`text-[11px] px-1.5 py-0.5 font-bold uppercase rounded-sm ${
-                          run.status === "success" ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
+                        <h3 className="text-sm font-semibold tracking-tight text-foreground/80">{run.name}</h3>
+                        <span className={`text-micro px-1.5 py-0.5 font-semibold rounded-sm ${
+                          TONE[run.status.tone].chip
                         }`}>
-                          {run.status}
+                          {run.status.text}
                         </span>
                       </div>
-                      <p className="text-[11px] font-mono-data text-muted/80 uppercase tracking-widest mt-0.5">
-                        {format(new Date(run.timestamp), "MMM d, HH:mm:ss")} — {run.logs.length} Cycles Captured
+                      <p className="text-micro text-muted/80 mt-0.5">
+                        {format(new Date(run.timestamp), "MMM d, HH:mm:ss")} — {run.logs.length} {run.logs.length === 1 ? "step" : "steps"}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="text-xs font-mono-data text-muted/80 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-bold">
+                    <div className="text-xs text-muted/80 opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
                       RUN: {run.runId.split("-")[0]}
                     </div>
                     {isExpanded ? <ChevronDown className="w-4 h-4 text-muted/80" /> : <ChevronRight className="w-4 h-4 text-muted/80" />}
@@ -130,18 +131,18 @@ export default function TracesContent({
                 {/* Workflow Logs Table */}
                 {isExpanded && (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse font-mono-data text-[11px] table-fixed">
+                    <table className="w-full text-left border-collapse font-mono-data text-micro table-fixed">
                       <thead>
-                        <tr className="border-t border-b border-white/5 bg-black/20 text-muted/80 uppercase tracking-[0.1em] h-10">
+                        <tr className="border-t border-b border-white/5 bg-black/20 text-muted/80 h-10">
                           <th className="px-6 w-[80px] font-bold">Status</th>
-                          <th className="px-4 w-[120px] font-bold">Agent Node</th>
-                          <th className="px-4 font-bold">Execution Payload Preview</th>
-                          <th className="px-4 w-[150px] font-bold">Trace Date</th>
+                          <th className="px-4 w-[120px] font-bold">Agent node</th>
+                          <th className="px-4 font-bold">Output preview</th>
+                          <th className="px-4 w-[150px] font-bold">Trace date</th>
                           <th className="px-6 w-[60px] font-bold text-right">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/[0.02]">
-                        {run.logs.map((log: any) => (
+                        {run.logs.map((log) => (
                           <tr 
                             key={log.id} 
                             className="hover:bg-accent/[0.03] transition-colors group h-12 cursor-pointer"
@@ -152,20 +153,20 @@ export default function TracesContent({
                             <td className="px-6">
                               <div className="flex items-center">
                                 {log.status === "success" ? (
-                                  <div className="flex items-center gap-2 text-green-500/60">
+                                  <div className="flex shrink-0 items-center gap-2 whitespace-nowrap pr-3 text-success">
                                     <CheckCircle2 className="w-3.5 h-3.5" />
-                                    <span className="text-[11px] font-bold uppercase">Success</span>
+                                    <span className="text-micro font-semibold">{logLabel(log.status).text}</span>
                                   </div>
                                 ) : (
-                                  <div className="flex items-center gap-2 text-red-500/60">
+                                  <div className={`flex shrink-0 items-center gap-2 whitespace-nowrap pr-3 ${TONE[logLabel(log.status).tone].text}`}>
                                     <AlertTriangle className="w-3.5 h-3.5" />
-                                    <span className="text-[11px] font-bold uppercase">Error</span>
+                                    <span className="text-micro font-semibold">{logLabel(log.status).text}</span>
                                   </div>
                                 )}
                               </div>
                             </td>
-                            <td className="px-4 truncate font-bold text-accent/80 uppercase tracking-tighter">
-                              {log.node_name || log.agent?.name || "System"}
+                            <td className="px-4 truncate font-semibold text-accent/80">
+                              {log.node_name || one(log.agent)?.name || "System"}
                             </td>
                             <td className="px-4 relative overflow-hidden">
                               <div className="flex items-center justify-between gap-4 w-full">
@@ -177,7 +178,7 @@ export default function TracesContent({
                             <td className="px-4 text-muted/80 tabular-nums text-xs">
                               <div className="flex flex-col">
                                 <span className="font-bold" suppressHydrationWarning>{formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}</span>
-                                <span className="text-[11px] opacity-50 uppercase">{format(new Date(log.created_at), "MMM d, HH:mm:ss")}</span>
+                                <span className="text-micro opacity-50">{format(new Date(log.created_at), "MMM d, HH:mm:ss")}</span>
                               </div>
                             </td>
                             <td className="px-6 text-right">
@@ -196,9 +197,9 @@ export default function TracesContent({
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl p-20 bg-white/[0.01]">
           <Terminal className="w-12 h-12 text-muted/5 mb-6" />
-          <h3 className="text-[12px] font-bold text-muted/80 uppercase tracking-[0.3em]">No Sequences Detected</h3>
-          <p className="text-[11px] text-muted/85 tracking-[0.2em] mt-3 font-mono-data italic uppercase">
-            Cluster Registry Silent // Awaiting Initialization
+          <h3 className="text-xs font-semibold text-muted/80">No traces yet</h3>
+          <p className="text-micro text-muted/85 mt-3">
+            Run a workflow and each step will appear here.
           </p>
         </div>
       )}

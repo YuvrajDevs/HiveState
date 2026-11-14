@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
 const LABELS: Record<string, string> = {
-  tasks: "Tasks", workflows: "Workflows", traces: "Traces", settings: "Settings", run: "Run a workflow",
+  tasks: "Runs", workflows: "Workflows", traces: "Traces", settings: "Settings", run: "Run a workflow",
 };
 
 export function Breadcrumbs() {
@@ -26,11 +26,11 @@ export function Breadcrumbs() {
           const last = i === crumbs.length - 1;
           return (
             <li key={c.href} className="flex min-w-0 items-center gap-1.5">
-              {i > 0 && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-neutral-600" />}
+              {i > 0 && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-subtle" />}
               {last ? (
                 <span aria-current="page" className="truncate font-medium text-white">{c.label}</span>
               ) : (
-                <Link href={c.href} className="truncate text-neutral-400 hover:text-white">{c.label}</Link>
+                <Link href={c.href} className="truncate text-muted hover:text-white">{c.label}</Link>
               )}
             </li>
           );

@@ -1,5 +1,7 @@
 "use server";
+import type { Canvas } from "@/types/domain";
 
+import { errorMessage } from "@/lib/errors";
 import { supabaseAdmin } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
@@ -17,13 +19,13 @@ export async function getWorkflow(id: string) {
 
     if (error) throw error;
     return { data };
-  } catch (error: any) {
-    console.error("Error fetching workflow:", error.message);
-    return { error: error.message };
+  } catch (error: unknown) {
+    console.error("Error fetching workflow:", errorMessage(error));
+    return { error: errorMessage(error) };
   }
 }
 
-export async function updateWorkflowCanvas(id: string, canvasJson: any) {
+export async function updateWorkflowCanvas(id: string, canvasJson: Canvas) {
   if (!id || id === "null" || id === "undefined") {
     return { error: "Invalid workflow ID" };
   }
@@ -39,7 +41,7 @@ export async function updateWorkflowCanvas(id: string, canvasJson: any) {
 
     if (error) {
       console.error("[DB ERROR] Update failed:", error);
-      return { error: error.message };
+      return { error: errorMessage(error) };
     }
     
     console.log(`[ACTION] Update result: ${data?.length} rows affected. Count: ${count}`);
@@ -50,9 +52,9 @@ export async function updateWorkflowCanvas(id: string, canvasJson: any) {
 
     revalidatePath(`/workflows/${cleanId}`);
     return { success: true };
-  } catch (error: any) {
-    console.error("[ACTION ERROR] updateWorkflowCanvas:", error.message);
-    return { error: error.message };
+  } catch (error: unknown) {
+    console.error("[ACTION ERROR] updateWorkflowCanvas:", errorMessage(error));
+    return { error: errorMessage(error) };
   }
 }
 
@@ -68,9 +70,9 @@ export async function createWorkflow(name: string) {
     
     revalidatePath("/workflows");
     return { data };
-  } catch (error: any) {
-    console.error("Error creating workflow:", error.message);
-    return { error: error.message };
+  } catch (error: unknown) {
+    console.error("Error creating workflow:", errorMessage(error));
+    return { error: errorMessage(error) };
   }
 }
 
@@ -88,9 +90,9 @@ export async function renameWorkflow(id: string, newName: string) {
     revalidatePath("/workflows");
     revalidatePath(`/workflows/${id}`);
     return { data };
-  } catch (error: any) {
-    console.error("Error renaming workflow:", error.message);
-    return { error: error.message };
+  } catch (error: unknown) {
+    console.error("Error renaming workflow:", errorMessage(error));
+    return { error: errorMessage(error) };
   }
 }
 
@@ -104,13 +106,13 @@ export async function getTemplates() {
 
     if (error) throw error;
     return { data };
-  } catch (error: any) {
-    console.error("Error fetching templates:", error.message);
-    return { error: error.message };
+  } catch (error: unknown) {
+    console.error("Error fetching templates:", errorMessage(error));
+    return { error: errorMessage(error) };
   }
 }
 
-export async function useTemplate(templateId: string, customName?: string) {
+export async function createFromTemplate(templateId: string, customName?: string) {
   try {
     // 1. Fetch template
     const { data: template, error: fetchError } = await supabaseAdmin
@@ -136,8 +138,8 @@ export async function useTemplate(templateId: string, customName?: string) {
     
     revalidatePath("/workflows");
     return { data };
-  } catch (error: any) {
-    console.error("Error using template:", error.message);
-    return { error: error.message };
+  } catch (error: unknown) {
+    console.error("Error using template:", errorMessage(error));
+    return { error: errorMessage(error) };
   }
 }
